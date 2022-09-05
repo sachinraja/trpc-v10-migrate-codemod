@@ -1,0 +1,68 @@
+{
+	"name": "trpc-v10-migrate-codemod",
+	"version": "0.0.0",
+	"type": "module",
+	"description": "codemod to update your tRPC code from v9 to v10",
+	"main": "dist/index.cjs",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"import": "./dist/index.js",
+			"default": "./dist/index.cjs"
+		}
+	},
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"format": "dprint fmt",
+		"lint": "run-p lint:*",
+		"lint:format": "dprint check",
+		"lint:types": "tsc",
+		"lint:js": "eslint .",
+		"prepare": "husky install",
+		"prepublishOnly": "pnpm build",
+		"test": "vitest",
+		"migrate-v10": "tsx src/index.ts"
+	},
+	"dependencies": {
+		"ts-morph": "16.0.0"
+	},
+	"devDependencies": {
+		"@sachinraja/eslint-config": "0.1.1",
+		"@trpc/server": "9.27.2",
+		"@types/node": "18.7.14",
+		"dprint": "0.31.1",
+		"eslint": "8.23.0",
+		"husky": "8.0.1",
+		"nano-staged": "0.8.0",
+		"npm-run-all": "4.1.5",
+		"tsup": "6.2.3",
+		"tsx": "3.9.0",
+		"typescript": "4.8.2",
+		"vite": "3.0.9",
+		"vitest": "0.23.0",
+		"zod": "3.18.0"
+	},
+	"sideEffects": false,
+	"nano-staged": {
+		"*.{js,ts,md,json,yaml}": "dprint fmt"
+	},
+	"tsup": {
+		"entry": [
+			"src/index.ts"
+		],
+		"format": [
+			"esm",
+			"cjs"
+		],
+		"dts": {
+			"resolve": true
+		},
+		"splitting": true,
+		"clean": true
+	},
+	"packageManager": "pnpm@7.10.0"
+}
