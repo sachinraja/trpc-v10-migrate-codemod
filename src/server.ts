@@ -19,7 +19,7 @@ type RouterUnit = {
 type MiddlewareUnit = {
 	tag: 'middleware'
 	id: string
-	hash: string
+	hash: number
 	body: string
 }
 
