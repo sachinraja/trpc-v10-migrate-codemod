@@ -2,11 +2,30 @@ import { Node, Project } from 'ts-morph'
 import { handleReactHookCall } from './react.js'
 import { getRouterProcedures, writeNewRouter } from './server.js'
 
-const transformv10Migration = async (options: { trpcNamespace?: string } = {}) => {
-	const { trpcNamespace = 'trpc' } = options
+interface MigrateOptions {
+	/**
+	 * @default trpc
+	 */
+	trpcNamespace?: string
+	/**
+	 * @default router
+	 */
+	routerCreator?: string
+	/**
+	 * @default tsconfig.json
+	 */
+	tsconfigPath?: string
+}
+
+const transformv10Migration = async (options: MigrateOptions) => {
+	const {
+		trpcNamespace = 'trpc',
+		routerCreator = 'router',
+		tsconfigPath = 'tsconfig.json',
+	} = options
 
 	const project = new Project({
-		tsConfigFilePath: 'test/tsconfig.test.json',
+		tsConfigFilePath: tsconfigPath,
 	})
 
 	const sourceFiles = project.getSourceFiles()
@@ -17,7 +36,7 @@ const transformv10Migration = async (options: { trpcNamespace?: string } = {}) =
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
-				if (Node.isIdentifier(firstChild) && firstChild.getText() === 'router') {
+				if (Node.isIdentifier(firstChild) && firstChild.getText() === routerCreator) {
 					const { units, topNode } = getRouterProcedures({ node })
 
 					return writeNewRouter({ units, sourceFile, topNode })
@@ -36,10 +55,12 @@ const transformv10Migration = async (options: { trpcNamespace?: string } = {}) =
 					firstChild.replaceWithText(`${trpcNamespace}.${path}.${procedureCallType}`)
 				}
 			})
-			// console.log(sourceFile.getText())
+
 			await sourceFile.save()
 		}),
 	)
 }
 
-transformv10Migration()
+transformv10Migration({
+	tsconfigPath: 'test/tsconfig.test.json',
+})

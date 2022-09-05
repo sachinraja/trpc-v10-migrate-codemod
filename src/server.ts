@@ -1,7 +1,7 @@
 import { CallExpression, CodeBlockWriter, Node, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph'
 import { getStringHash, getStringLiteralOrText, writeValueFromObjectLiteralElement } from './utils.js'
 
-type ProcedureUnit = {
+interface ProcedureUnit {
 	tag: 'procedure'
 	type: string
 	pathText: string
@@ -10,13 +10,13 @@ type ProcedureUnit = {
 	middlewaresHash?: string
 }
 
-type RouterUnit = {
+interface RouterUnit {
 	tag: 'router'
 	prefix: string
 	identifier: string
 }
 
-type MiddlewareUnit = {
+interface MiddlewareUnit {
 	tag: 'middleware'
 	id: string
 	hash: number
@@ -63,7 +63,7 @@ const handleRouterPropertyAccessor = (
 	}
 }
 
-type GetRouterProceduresOptions = {
+interface GetRouterProceduresOptions {
 	node: CallExpression
 	units?: Unit[]
 	middlewares?: MiddlewareUnit[]
@@ -114,9 +114,10 @@ export const writeNewRouter = (
 	}
 
 	type ProcedureOrRouterRecord = Record<string, ProcedureUnit | RouterShape>
-	type RouterShape =
-		& Pick<RouterUnit, 'tag' | 'prefix'>
-		& { units: ProcedureOrRouterRecord; text?: string }
+	interface RouterShape extends Pick<RouterUnit, 'tag' | 'prefix'> {
+		units: ProcedureOrRouterRecord
+		text?: string
+	}
 
 	const routerShape: RouterShape = {
 		tag: 'router',
@@ -192,20 +193,19 @@ export const writeNewRouter = (
 		} else {
 			writer.write(`.${type}(${options?.getText() ?? ''})`)
 		}
-		writer.write(',')
 		return
 	}
 
 	const writeShape = (writer: CodeBlockWriter, procedureOrShape: RouterShape | ProcedureUnit, path?: string) => {
+		if (path) {
+			writer.write(path).write(': ')
+		}
+
 		if (procedureOrShape.tag === 'router') {
 			if ('text' in procedureOrShape) {
 				const { text } = procedureOrShape
-				writer.writeLine(`${path}: ${text},`)
+				writer.write(`${text},`)
 				return
-			}
-
-			if (path) {
-				writer.write(`${path}: `)
 			}
 
 			writer.write(`t.router(`).inlineBlock(() => {
@@ -213,22 +213,20 @@ export const writeNewRouter = (
 					writeShape(writer, nestedShape, path)
 				}
 			}).write(')')
-
-			if (path) {
-				writer.write(',')
-			}
-
-			return
+		} else {
+			writeProcedure(writer, procedureOrShape)
 		}
 
-		writer.write(`${path}: `)
-		writeProcedure(writer, procedureOrShape)
-		return
+		if (path) {
+			writer.write(',')
+		}
+
+		writer.newLine()
 	}
 
 	topNode.replaceWithText((writer) => {
 		writeShape(writer, routerShape)
-	}).formatText()
+	})
 
 	const middlewareUnits = units.filter((unit): unit is MiddlewareUnit => unit.tag === 'middleware')
 
