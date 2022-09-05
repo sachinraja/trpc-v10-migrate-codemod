@@ -1,31 +1,23 @@
 import { Node, Project } from 'ts-morph'
 import { handleReactHookCall } from './react.js'
 import { getRouterProcedures, writeNewRouter } from './server.js'
+import { MigrateConfig } from './types.js'
 
-interface MigrateOptions {
-	/**
-	 * @default trpc
-	 */
-	trpcNamespace?: string
-	/**
-	 * @default router
-	 */
-	routerCreator?: string
-	/**
-	 * @default tsconfig.json
-	 */
-	tsconfigPath?: string
+const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
+	return {
+		trpcNamespace: 'trpc',
+		routerCreator: 'router',
+		tsconfigPath: 'tsconfig.json',
+		baseProcedure: 't.procedure',
+		...config,
+	}
 }
 
-const transformv10Migration = async (options: MigrateOptions) => {
-	const {
-		trpcNamespace = 'trpc',
-		routerCreator = 'router',
-		tsconfigPath = 'tsconfig.json',
-	} = options
+const transformv10Migration = async (config: Partial<MigrateConfig>) => {
+	const resolvedConfig = resolveConfig(config)
 
 	const project = new Project({
-		tsConfigFilePath: tsconfigPath,
+		tsConfigFilePath: resolvedConfig.tsconfigPath,
 	})
 
 	const sourceFiles = project.getSourceFiles()
@@ -36,23 +28,24 @@ const transformv10Migration = async (options: MigrateOptions) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
-				if (Node.isIdentifier(firstChild) && firstChild.getText() === routerCreator) {
+				if (Node.isIdentifier(firstChild) && firstChild.getText() === resolvedConfig.routerCreator) {
 					const { units, topNode } = getRouterProcedures({ node })
 
-					return writeNewRouter({ units, sourceFile, topNode })
+					return writeNewRouter({ units, sourceFile, topNode, config: resolvedConfig })
 				}
 
 				if (!Node.isPropertyAccessExpression(firstChild)) return
 				const callNamespaceOrCallExpression = firstChild.getFirstChild()
 
 				if (
-					Node.isIdentifier(callNamespaceOrCallExpression) && callNamespaceOrCallExpression.getText() === trpcNamespace
+					Node.isIdentifier(callNamespaceOrCallExpression)
+					&& callNamespaceOrCallExpression.getText() === resolvedConfig.trpcNamespace
 				) {
 					const procedureCallType = firstChild.getChildAtIndex(2).getText()
 					const path = handleReactHookCall(procedureCallType, node)
 
 					if (!path) return
-					firstChild.replaceWithText(`${trpcNamespace}.${path}.${procedureCallType}`)
+					firstChild.replaceWithText(`${resolvedConfig.trpcNamespace}.${path}.${procedureCallType}`)
 				}
 			})
 
@@ -63,4 +56,5 @@ const transformv10Migration = async (options: MigrateOptions) => {
 
 transformv10Migration({
 	tsconfigPath: 'test/tsconfig.test.json',
+	baseProcedure: 't.procedure',
 })
