@@ -1,5 +1,5 @@
 import { CallExpression, CodeBlockWriter, Node, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph'
-import { getRandomHash, getStringLiteralOrText, writeValueFromObjectLiteralElement } from './utils.js'
+import { getStringHash, getStringLiteralOrText, writeValueFromObjectLiteralElement } from './utils.js'
 
 type ProcedureUnit = {
 	tag: 'procedure'
@@ -19,6 +19,7 @@ type RouterUnit = {
 type MiddlewareUnit = {
 	tag: 'middleware'
 	id: string
+	hash: string
 	body: string
 }
 
@@ -41,10 +42,13 @@ const handleRouterPropertyAccessor = (
 
 	if (propertyAccessorText === 'middleware') {
 		const [function_] = arguments_
+		const middlewareBody = function_.getText()
+		const hash = getStringHash(middlewareBody)
 		return {
 			tag: 'middleware',
-			id: `middleware_${getRandomHash()}`,
-			body: function_.getText(),
+			id: `middleware_${hash}`,
+			hash,
+			body: middlewareBody,
 		}
 	}
 
@@ -103,9 +107,10 @@ export const writeNewRouter = (
 		.filter((unit) => unit.length > 0)
 	const uniqueMiddlewareCombinations = new Set(procedureMiddlewareHashes)
 
-	const middlewareHashProcedureMap = new Map<MiddlewareUnit[], string>()
+	const middlewaresProcedureIdMap = new Map<MiddlewareUnit[], string>()
 	for (const middlewares of uniqueMiddlewareCombinations.values()) {
-		middlewareHashProcedureMap.set(middlewares, `procedure_${getRandomHash()}`)
+		const middlewaresHash = middlewares.map((middleware) => middleware.hash).join('_')
+		middlewaresProcedureIdMap.set(middlewares, `procedure_${middlewaresHash}`)
 	}
 
 	type ProcedureOrRouterRecord = Record<string, ProcedureUnit | RouterShape>
@@ -165,7 +170,7 @@ export const writeNewRouter = (
 	const writeProcedure = (writer: CodeBlockWriter, unit: ProcedureUnit) => {
 		const { type, options, middlewares } = unit
 
-		const procedureHash = middlewareHashProcedureMap.get(middlewares) ?? 't.procedure'
+		const procedureHash = middlewaresProcedureIdMap.get(middlewares) ?? 't.procedure'
 
 		writer.write(procedureHash)
 		if (Node.isObjectLiteralExpression(options)) {
@@ -240,7 +245,7 @@ export const writeNewRouter = (
 		}).formatText()
 	}
 
-	for (const [middlewares, procedureHash] of middlewareHashProcedureMap.entries()) {
+	for (const [middlewares, procedureId] of middlewaresProcedureIdMap.entries()) {
 		const middlewareUses: string[] = []
 		for (const middleware of middlewares) {
 			middlewareUses.push(`.use(${middleware.id})`)
@@ -248,7 +253,7 @@ export const writeNewRouter = (
 		sourceFile.insertVariableStatement(topLevelNode.getChildIndex(), {
 			declarationKind: VariableDeclarationKind.Const,
 			declarations: [{
-				name: procedureHash,
+				name: procedureId,
 				initializer: `t.procedure${middlewareUses.join('')}`,
 			}],
 		})

@@ -1,4 +1,3 @@
-import { randomBytes } from 'node:crypto'
 import { CodeBlockWriter, Node, ObjectLiteralElementLike, SyntaxKind } from 'ts-morph'
 
 export const getStringFromStringOrArrayLiteral = (node: Node) => {
@@ -34,4 +33,13 @@ export const getStringLiteralOrText = (node: Node) => {
 	return node.getText()
 }
 
-export const getRandomHash = () => randomBytes(3).toString('hex')
+export const getStringHash = (string_: string) => {
+	let hash = 0
+	for (let index = 0, length = string_.length; index < length; index++) {
+		// eslint-disable-next-line unicorn/prefer-code-point
+		const chr = string_.charCodeAt(index)
+		hash = (hash << 5) - hash + chr
+		hash = Math.trunc(hash)
+	}
+	return hash >>> 0
+}
