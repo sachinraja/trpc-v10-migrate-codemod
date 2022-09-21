@@ -1,4 +1,12 @@
-import { CallExpression, CodeBlockWriter, Node, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph'
+import {
+	CallExpression,
+	CodeBlockWriter,
+	Node,
+	Project,
+	SourceFile,
+	SyntaxKind,
+	VariableDeclarationKind,
+} from 'ts-morph'
 import { MigrateConfig } from './types.js'
 import { getStringHash, getStringLiteralOrText, writeValueFromObjectLiteralElement } from './utils.js'
 
@@ -13,7 +21,7 @@ interface ProcedureUnit {
 
 interface RouterUnit {
 	tag: 'router'
-	prefix: string
+	prefix?: string
 	identifier: string
 }
 
@@ -33,6 +41,13 @@ const handleRouterPropertyAccessor = (
 
 	const propertyAccessorText = node.getText()
 	if (propertyAccessorText === 'merge') {
+		if (arguments_.length === 1) {
+			return {
+				tag: 'router',
+				identifier: arguments_[0].getText(),
+			}
+		}
+
 		const [prefix, router] = arguments_
 		return {
 			tag: 'router',
@@ -212,9 +227,15 @@ const writeShape = (
 }
 
 export const writeNewRouter = (
-	options: { units: Unit[]; sourceFile: SourceFile; topNode: Node; config: MigrateConfig },
+	options: {
+		units: Unit[]
+		sourceFile: SourceFile
+		topNode: Node
+		config: MigrateConfig
+		project: Project
+	},
 ) => {
-	const { units, sourceFile, topNode, config } = options
+	const { units, sourceFile, topNode, config, project } = options
 
 	const procedureUnits = units.filter((unit): unit is ProcedureUnit => unit.tag === 'procedure')
 	const routerUnits = units.filter((unit): unit is RouterUnit => unit.tag === 'router')
@@ -241,19 +262,19 @@ export const writeNewRouter = (
 		addProcedure(routerShape, unit, pathParts)
 	}
 
+	const childRouterUnits: RouterUnit[] = []
+	const mergeRouterUnits: RouterUnit[] = []
+
 	for (const unit of routerUnits) {
-		const pathParts = unit.prefix.split('.').filter((value) => value !== '')
-		addRouter(routerShape, unit, pathParts)
+		if (unit.prefix) childRouterUnits.push(unit)
+		else mergeRouterUnits.push(unit)
 	}
 
-	topNode.replaceWithText((writer) => {
-		writeShape({
-			writer,
-			procedureOrShape: routerShape,
-			middlewaresProcedureIdMap,
-			config,
-		})
-	})
+	for (const unit of childRouterUnits) {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		const pathParts = unit.prefix!.split('.').filter((value) => value !== '')
+		addRouter(routerShape, unit, pathParts)
+	}
 
 	const middlewareUnits = units.filter((unit): unit is MiddlewareUnit => unit.tag === 'middleware')
 
@@ -285,5 +306,41 @@ export const writeNewRouter = (
 			}],
 		})
 		insertionIndex += 1
+	}
+
+	sourceFile.addImportDeclarations(config.serverImports)
+
+	if (mergeRouterUnits.length > 0) {
+		const writer = project.createWriter()
+		writeShape({ writer, procedureOrShape: routerShape, middlewaresProcedureIdMap, config })
+
+		const newRouterText = writer.toString()
+		const hash = getStringHash(newRouterText)
+		const newRouterId = `router_${hash}`
+		sourceFile.insertVariableStatement(insertionIndex, {
+			declarationKind: VariableDeclarationKind.Const,
+			declarations: [{
+				name: newRouterId,
+				initializer: newRouterText,
+			}],
+		})
+
+		topNode.replaceWithText((writer) => {
+			writer.write('t.mergeRouters(')
+				.write(newRouterId)
+				.write(',')
+				.write(
+					mergeRouterUnits.map((unit) => unit.identifier).join(', '),
+				).write(')')
+		})
+	} else {
+		topNode.replaceWithText((writer) => {
+			writeShape({
+				writer,
+				procedureOrShape: routerShape,
+				middlewaresProcedureIdMap,
+				config,
+			})
+		})
 	}
 }

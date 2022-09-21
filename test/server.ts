@@ -18,7 +18,7 @@ const appRouter = router()
 			}
 		},
 	})
-	.merge('example.', exampleRouter)
+	.merge('example', exampleRouter)
 	.middleware(async ({ ctx, next }) => {
 		if (!ctx.user?.isAdmin) {
 			throw new TRPCError({ code: 'UNAUTHORIZED' })

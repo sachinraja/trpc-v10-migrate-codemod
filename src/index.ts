@@ -9,6 +9,7 @@ const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 		routerCreator: 'router',
 		tsconfigPath: 'tsconfig.json',
 		baseProcedure: 't.procedure',
+		serverImports: [],
 		...config,
 	}
 }
@@ -31,7 +32,7 @@ const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (Node.isIdentifier(firstChild) && firstChild.getText() === resolvedConfig.routerCreator) {
 					const { units, topNode } = getRouterProcedures({ node })
 
-					return writeNewRouter({ units, sourceFile, topNode, config: resolvedConfig })
+					return writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
 				}
 
 				if (!Node.isPropertyAccessExpression(firstChild)) return
@@ -57,4 +58,5 @@ const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 transformv10Migration({
 	tsconfigPath: 'test/tsconfig.test.json',
 	baseProcedure: 't.procedure',
+	serverImports: [{ moduleSpecifier: '~/trpc', namedImports: ['baseProcedure'] }],
 })

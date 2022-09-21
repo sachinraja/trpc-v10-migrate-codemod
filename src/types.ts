@@ -1,3 +1,5 @@
+import { ImportDeclarationStructure, OptionalKind } from 'ts-morph'
+
 export interface MigrateConfig {
 	/**
 	 * @default trpc
@@ -16,4 +18,9 @@ export interface MigrateConfig {
 	 * @default t.procedure
 	 */
 	baseProcedure: string
+	/**
+	 * Imports to add to the top of the transformed files.
+	 * @default []
+	 */
+	serverImports: OptionalKind<ImportDeclarationStructure>[]
 }
