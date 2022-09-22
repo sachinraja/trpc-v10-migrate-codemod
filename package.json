@@ -3,6 +3,16 @@
 	"version": "0.0.0",
 	"type": "module",
 	"description": "codemod to migrate your tRPC codebase from v9 to v10",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/sachinraja/trpc-v10-migrate-codemod.git"
+	},
+	"homepage": "https://github.com/sachinraja/trpc-v10-migrate-codemod#readme",
+	"bugs": {
+		"url": "https://github.com/sachinraja/trpc-v10-migrate-codemod/issues"
+	},
+	"author": "Sachin Raja <sachinraja2349@gmail.com>",
+	"license": "MIT",
 	"bin": "dist/bin.js",
 	"main": "dist/index.cjs",
 	"exports": {
