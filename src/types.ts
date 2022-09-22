@@ -9,7 +9,7 @@ export interface MigrateConfig {
 	/**
 	 * @default router
 	 */
-	routerCreator: string
+	routerFactory: string
 	/**
 	 * @default tsconfig.json
 	 */

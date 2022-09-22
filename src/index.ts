@@ -6,7 +6,7 @@ import { MigrateConfig } from './types.js'
 const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 	return {
 		trpcNamespace: 'trpc',
-		routerCreator: 'router',
+		routerFactory: 'router',
 		tsconfigPath: 'tsconfig.json',
 		baseProcedure: 't.procedure',
 		serverImports: [],
@@ -30,7 +30,7 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
-				if (Node.isIdentifier(firstChild) && firstChild.getText() === resolvedConfig.routerCreator) {
+				if (Node.isIdentifier(firstChild) && firstChild.getText() === resolvedConfig.routerFactory) {
 					const { units, topNode } = getRouterUnits({ node })
 
 					writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
