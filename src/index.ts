@@ -1,6 +1,6 @@
 import { Node, Project } from 'ts-morph'
 import { handleReactHookCall } from './react.js'
-import { getRouterProcedures, writeNewRouter } from './server.js'
+import { getRouterUnits, writeNewRouter } from './server.js'
 import { MigrateConfig } from './types.js'
 
 const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
@@ -14,7 +14,7 @@ const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 	}
 }
 
-const transformv10Migration = async (config: Partial<MigrateConfig>) => {
+export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 	const resolvedConfig = resolveConfig(config)
 
 	const project = new Project({
@@ -25,14 +25,20 @@ const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 	await Promise.all(
 		sourceFiles.map(async (sourceFile) => {
+			const migratedRouters: string[] = []
 			sourceFile.forEachDescendant((node) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
 				if (Node.isIdentifier(firstChild) && firstChild.getText() === resolvedConfig.routerCreator) {
-					const { units, topNode } = getRouterProcedures({ node })
+					const { units, topNode } = getRouterUnits({ node })
 
-					return writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
+					writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
+					const routerNameIdentifier = topNode.getParent()?.getFirstChild()
+					if (Node.isIdentifier(routerNameIdentifier)) {
+						migratedRouters.push(routerNameIdentifier.getText())
+					}
+					return
 				}
 
 				if (!Node.isPropertyAccessExpression(firstChild)) return
@@ -50,13 +56,11 @@ const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				}
 			})
 
+			console.log(`migrated ${sourceFile.getFilePath()}`)
+			for (const router of migratedRouters) {
+				console.log(`  - migrated ${router}`)
+			}
 			await sourceFile.save()
 		}),
 	)
 }
-
-transformv10Migration({
-	tsconfigPath: 'test/tsconfig.test.json',
-	baseProcedure: 't.procedure',
-	serverImports: [{ moduleSpecifier: '~/trpc', namedImports: ['baseProcedure'] }],
-})

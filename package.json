@@ -2,7 +2,8 @@
 	"name": "trpc-v10-migrate-codemod",
 	"version": "0.0.0",
 	"type": "module",
-	"description": "codemod to update your tRPC code from v9 to v10",
+	"description": "codemod to migrate your tRPC codebase from v9 to v10",
+	"bin": "dist/bin.js",
 	"main": "dist/index.cjs",
 	"exports": {
 		"./package.json": "./package.json",
@@ -25,9 +26,10 @@
 		"prepare": "husky install",
 		"prepublishOnly": "pnpm build",
 		"test": "vitest",
-		"migrate-v10": "tsx src/index.ts"
+		"migrate-v10": "tsx src/bin.ts"
 	},
 	"dependencies": {
+		"clipanion": "3.2.0-rc.12",
 		"ts-morph": "16.0.0"
 	},
 	"devDependencies": {
@@ -52,7 +54,8 @@
 	},
 	"tsup": {
 		"entry": [
-			"src/index.ts"
+			"src/index.ts",
+			"src/bin.ts"
 		],
 		"format": [
 			"esm",

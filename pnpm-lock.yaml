@@ -4,6 +4,7 @@ specifiers:
   '@sachinraja/eslint-config': 0.1.1
   '@trpc/server': 9.27.2
   '@types/node': 18.7.14
+  clipanion: 3.2.0-rc.12
   dprint: 0.31.1
   eslint: 8.23.0
   husky: 8.0.1
@@ -18,6 +19,7 @@ specifiers:
   zod: 3.18.0
 
 dependencies:
+  clipanion: 3.2.0-rc.12
   ts-morph: 16.0.0
 
 devDependencies:
@@ -530,6 +532,12 @@ packages:
     dependencies:
       escape-string-regexp: 1.0.5
     dev: true
+
+  /clipanion/3.2.0-rc.12:
+    resolution: {integrity: sha512-yhxjhyfuOtQW11CLgfqG3aWsVNu52CzQd18tgAn4P/AMaEvaLbB1x9qmKb5K5HPvjBzDG6JWSHdJOIfqQgOo7Q==}
+    dependencies:
+      typanion: 3.12.0
+    dev: false
 
   /code-block-writer/11.0.3:
     resolution: {integrity: sha512-NiujjUFB4SwScJq2bwbYUtXbZhBSlY6vYzm++3Q6oC+U+injTqfPYFK8wS9COOmb2lueqp0ZRB4nK1VYeHgNyw==}
@@ -2571,6 +2579,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
+
+  /typanion/3.12.0:
+    resolution: {integrity: sha512-o59ZobUBsG+2dHnGVI2shscqqzHdzCOixCU0t8YXLxM2Su42J2ha7hY9V5+6SIBjVsw6aLqrlYznCgQGJN4Kag==}
+    dev: false
 
   /type-check/0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}

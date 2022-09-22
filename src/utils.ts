@@ -43,3 +43,9 @@ export const getStringHash = (string_: string) => {
 	}
 	return hash >>> 0
 }
+
+export const getDefinedProperties = <TObject extends Record<string, unknown>>(object: TObject): TObject =>
+	Object.fromEntries(
+		Object.entries(object).filter(([, v]) => v !== undefined),
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	) as any

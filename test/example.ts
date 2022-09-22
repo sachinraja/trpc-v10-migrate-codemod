@@ -1,7 +1,7 @@
 import { router } from '@trpc/server'
 
-export const exampleRouter = t.router({
-	thing: t.procedure.query(() => {
+export const exampleRouter = router().query('thing', {
+	resolve() {
 		return 'example'
-	}),
+	},
 })

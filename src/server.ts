@@ -85,7 +85,7 @@ interface GetRouterProceduresOptions {
 	middlewares?: MiddlewareUnit[]
 }
 
-export const getRouterProcedures = (
+export const getRouterUnits = (
 	options: GetRouterProceduresOptions,
 ): { units: Unit[]; topNode: Node } => {
 	const { node, units = [], middlewares = [] } = options
@@ -107,7 +107,7 @@ export const getRouterProcedures = (
 
 	const newMiddlewares = unit.tag === 'middleware' ? [...middlewares, unit] : middlewares
 
-	return getRouterProcedures({ node: callExpressionParent, units, middlewares: newMiddlewares })
+	return getRouterUnits({ node: callExpressionParent, units, middlewares: newMiddlewares })
 }
 
 type ProcedureOrRouterRecord = Record<string, ProcedureUnit | RouterShape>
