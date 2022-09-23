@@ -308,8 +308,6 @@ export const writeNewRouter = (
 		insertionIndex += 1
 	}
 
-	sourceFile.addImportDeclarations(config.serverImports)
-
 	if (mergeRouterUnits.length > 0) {
 		const writer = project.createWriter()
 		writeShape({ writer, procedureOrShape: routerShape, middlewaresProcedureIdMap, config })

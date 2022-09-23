@@ -25,4 +25,11 @@ export interface MigrateConfig {
 	 * @default []
 	 */
 	serverImports: OptionalKind<ImportDeclarationStructure>[]
+	/**
+	 * imports to remove from the top of every file with a transformed router
+	 */
+	removeServerImports: {
+		moduleSpecifier: string
+		namedImports: string[]
+	}[]
 }

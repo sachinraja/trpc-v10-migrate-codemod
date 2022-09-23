@@ -10,6 +10,7 @@ const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 		tsconfigPath: 'tsconfig.json',
 		baseProcedure: 't.procedure',
 		serverImports: [],
+		removeServerImports: [],
 		...config,
 	}
 }
@@ -23,9 +24,15 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 	const sourceFiles = project.getSourceFiles()
 
+	const allMigratedRouters: { filePath: string; identifier: string }[] = []
+
 	await Promise.all(
 		sourceFiles.map(async (sourceFile) => {
-			const migratedRouters: string[] = []
+			const sourceFileMigratedRouters: string[] = []
+
+			const filePath = sourceFile.getFilePath()
+			let serverHasChanged = false
+
 			sourceFile.forEachDescendant((node) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
@@ -36,8 +43,11 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 					writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
 					const routerNameIdentifier = topNode.getParent()?.getFirstChild()
 					if (Node.isIdentifier(routerNameIdentifier)) {
-						migratedRouters.push(routerNameIdentifier.getText())
+						const identifier = routerNameIdentifier.getText()
+						sourceFileMigratedRouters.push(identifier)
+						allMigratedRouters.push({ filePath, identifier })
 					}
+					serverHasChanged = true
 					return
 				}
 
@@ -56,11 +66,41 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				}
 			})
 
-			console.log(`migrated ${sourceFile.getFilePath()}`)
-			for (const router of migratedRouters) {
+			if (serverHasChanged) {
+				// add imports
+				sourceFile.addImportDeclarations(resolvedConfig.serverImports)
+
+				// remove imports
+				for (const importDeclaration of sourceFile.getImportDeclarations()) {
+					const removeNamedImports: string[] = []
+					for (const removeImport of resolvedConfig.removeServerImports) {
+						if (importDeclaration.getModuleSpecifierValue() === removeImport.moduleSpecifier) {
+							removeNamedImports.push(...removeImport.namedImports)
+						}
+					}
+
+					for (const namedImport of importDeclaration.getNamedImports()) {
+						if (removeNamedImports.includes(namedImport.getName())) {
+							namedImport.remove()
+						}
+					}
+
+					if (importDeclaration.getNamedImports().length === 0) {
+						importDeclaration.remove()
+					}
+				}
+			}
+
+			console.log(`migrated ${filePath}`)
+			for (const router of sourceFileMigratedRouters) {
 				console.log(`  - migrated ${router}`)
 			}
 			await sourceFile.save()
 		}),
 	)
+
+	console.log('\nMigration Summary:')
+	for (const migratedRouter of allMigratedRouters) {
+		console.log(`${migratedRouter.identifier} (${migratedRouter.filePath})`)
+	}
 }

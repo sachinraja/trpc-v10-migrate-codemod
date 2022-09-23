@@ -31,7 +31,12 @@ Run `npx trpc-v10-migrate-codemod --help` to see all options.
 `--router-factory` - the function you use to create your routers (i.e. `createRouter`, `createProtectedRouter`) (default = 'router')
 
 `--base-procedure` - the base procedure unit for v10 (i.e. `adminProcedure`) (default = 't.procedure')
-`--import` - import to add to the top of every file with a transformed router (can be specified multiple times)
+`--import` - named import to add to the top of every file with a transformed router (can be specified multiple times)
 
 - structure is [named import]:[module specifier]
 - example: `--import t:~/server/trpc --import adminProcedure:~/server/trpc`
+
+`--remove-import` - named import to remove from every file with a transformed router (can be specified multiple times)
+
+- structure is [named import]:[module specifier]
+- example: `--remove-import createRouter:~/server/trpc`
