@@ -26,8 +26,9 @@ Run `npx trpc-v10-migrate-codemod --help` to see all options.
 
 `--tsconfig-path` - path to your `tsconfig.json` file (default = 'tsconfig.json')
 
-`--trpc-namespace` - namespace of your tRPC react hooks (default = 'trpc')
+`--trpc-namespace` - namespace of your tRPC React hooks (default = 'trpc')
 
 `--router-factory` - the function you use to create your routers (i.e. `createRouter`, `createProtectedRouter`) (default = 'router')
 
 `--base-procedure` - the base procedure unit for v10 (i.e. `adminProcedure`) (default = 't.procedure')
+`--import` - import to add to the top of every file with a transformed router (can be specified multiple times)

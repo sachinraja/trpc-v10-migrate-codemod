@@ -2,11 +2,12 @@ import { ImportDeclarationStructure, OptionalKind } from 'ts-morph'
 
 export interface MigrateConfig {
 	/**
-	 * Namespace of the tRPC react hooks.
+	 * namespace of the tRPC React hooks
 	 * @default trpc
 	 */
 	trpcNamespace: string
 	/**
+	 * the function you use to create your routers
 	 * @default router
 	 */
 	routerFactory: string
@@ -15,12 +16,12 @@ export interface MigrateConfig {
 	 */
 	tsconfigPath: string
 	/**
-	 * The variable name of the base procedure to chain new ones from.
+	 * variable name of the base procedure to chain new ones from
 	 * @default t.procedure
 	 */
 	baseProcedure: string
 	/**
-	 * Imports to add to the top of the transformed files.
+	 * imports to add to the top of every file with a transformed router
 	 * @default []
 	 */
 	serverImports: OptionalKind<ImportDeclarationStructure>[]
