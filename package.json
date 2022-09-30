@@ -36,7 +36,8 @@
 		"prepare": "husky install",
 		"prepublishOnly": "pnpm build",
 		"test": "vitest",
-		"migrate-v10": "tsx src/bin.ts"
+		"migrate-v10": "tsx src/bin.ts",
+		"migrate-test": "pnpm migrate-v10 --tsconfig-path ./test/tsconfig.test.json"
 	},
 	"dependencies": {
 		"clipanion": "3.2.0-rc.12",
