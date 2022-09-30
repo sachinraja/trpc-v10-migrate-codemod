@@ -18,6 +18,15 @@ const appRouter = router()
 			}
 		},
 	})
+	.query('post.byId', {
+		input: z.object({ id: z.string() }),
+		resolve: ({ input }) => {
+			return {
+				id: input.id,
+				title: 'hello',
+			}
+		},
+	})
 	.merge('example', exampleRouter)
 	.middleware(async ({ ctx, next }) => {
 		if (!ctx.user?.isAdmin) {
