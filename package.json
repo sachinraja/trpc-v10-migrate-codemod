@@ -1,6 +1,6 @@
 {
 	"name": "trpc-v10-migrate-codemod",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"type": "module",
 	"description": "codemod to migrate your tRPC codebase from v9 to v10",
 	"repository": {
