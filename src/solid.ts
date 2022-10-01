@@ -9,9 +9,18 @@ export const handleSolidHookCall = (
 		const arguments_ = callExpression.getArguments()
 		const [pathArgument, configArgument] = arguments_
 		if (Node.isArrowFunction(pathArgument)) {
-			const path = getStringFromStringOrArrayLiteral(pathArgument.getBody())
-			callExpression.removeArgument(pathArgument)
-			return path
+			const body = pathArgument.getBody()
+			if (Node.isArrayLiteralExpression(body)) {
+				console.log('isarray=true')
+				const elements = body.getElements()
+				const [pathElement, argumentsElement] = elements
+				callExpression.insertArgument(0, argumentsElement.getText())
+				if (Node.isStringLiteral(pathElement)) {
+					const path = pathElement.getLiteralText()
+					callExpression.removeArgument(pathArgument)
+					return path
+				}
+			}
 		}
 		if (Node.isObjectLiteralExpression(configArgument)) {
 			const trpcPropertyNames = ['context', 'ssr']
@@ -30,19 +39,6 @@ export const handleSolidHookCall = (
 			}
 
 			configArgument.formatText()
-		}
-
-		if (Node.isArrayLiteralExpression(pathArgument)) {
-			const elements = pathArgument.getElements()
-
-			callExpression.insertArgument(0, elements[1].getText())
-			const pathElement = elements[0]
-
-			if (Node.isStringLiteral(pathElement)) {
-				const path = pathElement.getLiteralText()
-				callExpression.removeArgument(pathArgument)
-				return path
-			}
 		}
 	}
 
