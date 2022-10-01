@@ -25,6 +25,7 @@ Current transformations:
 Run `npx trpc-v10-migrate-codemod --help` to see all options.
 
 `--tsconfig-path` - path to your `tsconfig.json` file (default = 'tsconfig.json')
+`--pkg` - path to your `package.json` file (default = 'package.json')
 
 `--react-namespace` - namespace of your tRPC React hooks (can be specified multiple times) (default = 'trpc')
 `--caller-namespace` - namespace of the tRPC callers (can be specified multiple times) (default = 'trpc')

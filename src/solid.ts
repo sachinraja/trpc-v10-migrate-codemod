@@ -1,14 +1,18 @@
 import { CallExpression, Node, ObjectLiteralElementLike } from 'ts-morph'
 import { getStringFromStringOrArrayLiteral } from './utils.js'
 
-export const handleReactHookCall = (
+export const handleSolidHookCall = (
 	type: string,
 	callExpression: CallExpression,
 ) => {
-	if (type === 'useQuery') {
+	if (type === 'createQuery') {
 		const arguments_ = callExpression.getArguments()
-		const [pathAndInputArgument, configArgument] = arguments_
-
+		const [pathArgument, configArgument] = arguments_
+		if (Node.isArrowFunction(pathArgument)) {
+			const path = getStringFromStringOrArrayLiteral(pathArgument.getBody())
+			callExpression.removeArgument(pathArgument)
+			return path
+		}
 		if (Node.isObjectLiteralExpression(configArgument)) {
 			const trpcPropertyNames = ['context', 'ssr']
 
@@ -28,25 +32,27 @@ export const handleReactHookCall = (
 			configArgument.formatText()
 		}
 
-		if (Node.isArrayLiteralExpression(pathAndInputArgument)) {
-			const elements = pathAndInputArgument.getElements()
+		if (Node.isArrayLiteralExpression(pathArgument)) {
+			const elements = pathArgument.getElements()
 
 			callExpression.insertArgument(0, elements[1].getText())
 			const pathElement = elements[0]
 
 			if (Node.isStringLiteral(pathElement)) {
 				const path = pathElement.getLiteralText()
-				callExpression.removeArgument(pathAndInputArgument)
+				callExpression.removeArgument(pathArgument)
 				return path
 			}
 		}
 	}
 
-	if (type === 'useMutation') {
+	if (type === 'createMutation') {
 		const arguments_ = callExpression.getArguments()
 		const pathArgument = arguments_[0]
-		const path = getStringFromStringOrArrayLiteral(pathArgument)
-		callExpression.removeArgument(pathArgument)
-		return path
+		if (Node.isArrowFunction(pathArgument)) {
+			const path = getStringFromStringOrArrayLiteral(pathArgument.getBody())
+			callExpression.removeArgument(pathArgument)
+			return path
+		}
 	}
 }

@@ -6,8 +6,15 @@ import { getDefinedProperties } from './utils.js'
 
 runExit(
 	class extends Command {
-		tsconfigPath = Option.String('--tsconfig-path', { description: 'filepath of tsconfig.json' })
-		reactNamespace = Option.Array('--trpc-namespace', { description: 'namespace of the tRPC react hooks' })
+		tsconfigPath = Option.String('--tsconfig-path', {
+			description: 'filepath of tsconfig.json',
+		})
+		packageJSONPath = Option.String('--pkg', {
+			description: 'filepath of package.json',
+		})
+		reactNamespace = Option.Array('--trpc-namespace', {
+			description: 'namespace of the tRPC react hooks',
+		})
 		callerNamespace = Option.Array('--caller-namespace', {
 			description: 'namespace of the tRPC callers',
 		})
@@ -27,28 +34,33 @@ runExit(
 		static usage = Command.Usage({
 			description: 'migrate your codebase from tRPC v9 to v10',
 			examples: [
-				[
-					'basic example',
-					'$0',
-				],
+				['basic example', '$0'],
 				[
 					'with configuration (the defaults are shown)',
 					'$0 --tsconfig-path tsconfig.json --trpc-namespace trpc --router-factory router --base-procedure t.procedure',
 				],
-				['with injected server imports', '$0 --import t:~/server/trpc --import adminProcedure:~/server/trpc'],
-				['with removed imports', '$0 --remove-import createRouter:~/server/trpc'],
+				[
+					'with injected server imports',
+					'$0 --import t:~/server/trpc --import adminProcedure:~/server/trpc',
+				],
+				[
+					'with removed imports',
+					'$0 --remove-import createRouter:~/server/trpc',
+				],
 			],
 		})
 
 		async execute() {
 			console.log('migrating...')
-			const serverImports: MigrateConfig['serverImports'] = this.imports.map((serverImport) => {
-				const [namedImport, moduleSpecifier] = serverImport.split(':')
-				return {
-					moduleSpecifier,
-					namedImports: [namedImport],
-				}
-			})
+			const serverImports: MigrateConfig['serverImports'] = this.imports.map(
+				(serverImport) => {
+					const [namedImport, moduleSpecifier] = serverImport.split(':')
+					return {
+						moduleSpecifier,
+						namedImports: [namedImport],
+					}
+				},
+			)
 
 			const removeServerImports: MigrateConfig['removeServerImports'] = this.removeImports.map((serverImport) => {
 				const [namedImport, moduleSpecifier] = serverImport.split(':')
@@ -58,14 +70,17 @@ runExit(
 				}
 			})
 
-			await transformv10Migration(getDefinedProperties({
-				reactNamespace: this.reactNamespace,
-				routerFactory: this.routerFactory,
-				tsconfigPath: this.tsconfigPath,
-				baseProcedure: this.baseProcedure,
-				serverImports,
-				removeServerImports,
-			}))
+			await transformv10Migration(
+				getDefinedProperties({
+					reactNamespace: this.reactNamespace,
+					routerFactory: this.routerFactory,
+					tsconfigPath: this.tsconfigPath,
+					baseProcedure: this.baseProcedure,
+					packageJSONPath: this.packageJSONPath,
+					serverImports,
+					removeServerImports,
+				}),
+			)
 		}
 	},
 )

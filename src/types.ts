@@ -22,6 +22,10 @@ export interface MigrateConfig {
 	 */
 	tsconfigPath: string
 	/**
+	 * @default 'package.json'
+	 */
+	packageJSONPath: string
+	/**
 	 * variable name of the base procedure to chain new ones from
 	 * @default 't.procedure'
 	 */

@@ -1,8 +1,11 @@
 import { Node, Project } from 'ts-morph'
 import { handleCallerCall } from './caller.js'
 import { handleReactHookCall } from './react.js'
+// import { handleSolidHookCall } from "./solid.js";
 import { getRouterUnits, writeNewRouter } from './server.js'
+import { handleSolidHookCall } from './solid.js'
 import { MigrateConfig } from './types.js'
+import { modifyVersions } from './utils.js'
 
 const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 	return {
@@ -13,6 +16,7 @@ const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 		baseProcedure: 't.procedure',
 		serverImports: [],
 		removeServerImports: [],
+		packageJSONPath: 'package.json',
 		...config,
 	}
 }
@@ -23,12 +27,12 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 	const project = new Project({
 		tsConfigFilePath: resolvedConfig.tsconfigPath,
 	})
-
 	const sourceFiles = project.getSourceFiles()
-
 	const allMigratedRouters: { filePath: string; identifier: string }[] = []
 
-	await Promise.all(
+	await modifyVersions(resolvedConfig.packageJSONPath)
+
+	await Promise.all([
 		sourceFiles.map(async (sourceFile) => {
 			const sourceFileMigratedRouters: string[] = []
 
@@ -39,10 +43,19 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
-				if (Node.isIdentifier(firstChild) && resolvedConfig.routerFactory.includes(firstChild.getText())) {
+				if (
+					Node.isIdentifier(firstChild)
+					&& resolvedConfig.routerFactory.includes(firstChild.getText())
+				) {
 					const { units, topNode } = getRouterUnits({ node })
 
-					writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
+					writeNewRouter({
+						project,
+						units,
+						sourceFile,
+						topNode,
+						config: resolvedConfig,
+					})
 					const routerNameIdentifier = topNode.getParent()?.getFirstChild()
 					if (Node.isIdentifier(routerNameIdentifier)) {
 						const identifier = routerNameIdentifier.getText()
@@ -56,16 +69,20 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (!Node.isPropertyAccessExpression(firstChild)) return
 				const callNamespaceOrCallExpression = firstChild.getFirstChild()
 
-				if (
-					Node.isIdentifier(callNamespaceOrCallExpression)
-				) {
+				if (Node.isIdentifier(callNamespaceOrCallExpression)) {
 					const namespace = callNamespaceOrCallExpression.getText()
 					if (resolvedConfig.reactNamespace.includes(namespace)) {
-						const procedureCallType = firstChild.getChildAtIndex(2).getText()
-						const path = handleReactHookCall(procedureCallType, node)
-
+						let procedureCallType = firstChild.getChildAtIndex(2).getText()
+						const path = procedureCallType.startsWith('create')
+							? handleSolidHookCall(procedureCallType, node)
+							: handleReactHookCall(procedureCallType, node)
 						if (!path) return
-						firstChild.replaceWithText(`${resolvedConfig.reactNamespace}.${path}.${procedureCallType}`)
+						if (procedureCallType.startsWith('create')) {
+							procedureCallType = `use${procedureCallType.slice(6)}`
+						}
+						firstChild.replaceWithText(
+							`${resolvedConfig.reactNamespace}.${path}.${procedureCallType}`,
+						)
 						return
 					}
 
@@ -73,7 +90,9 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 						const path = handleCallerCall(node)
 
 						if (!path) return
-						firstChild.replaceWithText(`${resolvedConfig.callerNamespace}.${path}`)
+						firstChild.replaceWithText(
+							`${resolvedConfig.callerNamespace}.${path}`,
+						)
 						return
 					}
 				}
@@ -87,7 +106,10 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				for (const importDeclaration of sourceFile.getImportDeclarations()) {
 					const removeNamedImports: string[] = []
 					for (const removeImport of resolvedConfig.removeServerImports) {
-						if (importDeclaration.getModuleSpecifierValue() === removeImport.moduleSpecifier) {
+						if (
+							importDeclaration.getModuleSpecifierValue()
+								=== removeImport.moduleSpecifier
+						) {
 							removeNamedImports.push(...removeImport.namedImports)
 						}
 					}
@@ -110,10 +132,14 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 			}
 			await sourceFile.save()
 		}),
-	)
+	])
 
-	console.log('\nMigration Summary:')
-	for (const migratedRouter of allMigratedRouters) {
-		console.log(`${migratedRouter.identifier} (${migratedRouter.filePath})`)
+	if (allMigratedRouters.length > 0) {
+		console.log('\nMigration Summary:')
+		for (const migratedRouter of allMigratedRouters) {
+			console.log(`${migratedRouter.identifier} (${migratedRouter.filePath})`)
+		}
+	} else {
+		console.log('No routers were migrated')
 	}
 }
