@@ -123,6 +123,13 @@ const addProcedure = (shape: RouterShape, procedureUnit: ProcedureUnit, pathPart
 		shape.units[pathParts[index]] = procedureUnit
 		return
 	}
+
+	const thisRouter = shape.units[pathParts[index]] as RouterShape
+	if (thisRouter) {
+		addProcedure(thisRouter, procedureUnit, pathParts, index + 1)
+		return
+	}
+
 	const router: RouterShape = {
 		tag: 'router',
 		prefix: pathParts[index],
@@ -142,6 +149,13 @@ const addRouter = (shape: RouterShape, routerUnit: RouterUnit, pathParts: string
 		}
 		return
 	}
+
+	const thisRouter = shape.units[pathParts[index]] as RouterShape
+	if (thisRouter) {
+		addRouter(thisRouter, routerUnit, pathParts, index + 1)
+		return
+	}
+
 	const router: RouterShape = {
 		tag: 'router',
 		prefix: pathParts[index],
