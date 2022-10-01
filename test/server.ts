@@ -39,3 +39,5 @@ const appRouter = router()
 			return 'a key'
 		},
 	})
+
+await caller.query('greeting', { text: 'hi' })

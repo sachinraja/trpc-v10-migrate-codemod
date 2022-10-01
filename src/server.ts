@@ -162,7 +162,6 @@ const addRouter = (shape: RouterShape, routerUnit: RouterUnit, pathParts: string
 		units: {},
 	}
 	shape.units[pathParts[index]] = router
-
 	addRouter(router, routerUnit, pathParts, index + 1)
 }
 

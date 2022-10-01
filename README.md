@@ -26,7 +26,8 @@ Run `npx trpc-v10-migrate-codemod --help` to see all options.
 
 `--tsconfig-path` - path to your `tsconfig.json` file (default = 'tsconfig.json')
 
-`--trpc-namespace` - namespace of your tRPC React hooks (default = 'trpc')
+`--react-namespace` - namespace of your tRPC React hooks (default = 'trpc')
+`--caller-namespace` - namespace of the tRPC callers (default = 'trpc')
 
 `--router-factory` - the function you use to create your routers (i.e. `createRouter`, `createProtectedRouter`) (can be specified multiple times) (default = ['router'])
 

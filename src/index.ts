@@ -1,11 +1,13 @@
 import { Node, Project } from 'ts-morph'
+import { handleCallerCall } from './caller.js'
 import { handleReactHookCall } from './react.js'
 import { getRouterUnits, writeNewRouter } from './server.js'
 import { MigrateConfig } from './types.js'
 
 const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 	return {
-		trpcNamespace: 'trpc',
+		reactNamespace: ['trpc'],
+		callerNamespace: ['caller'],
 		routerFactory: ['router'],
 		tsconfigPath: 'tsconfig.json',
 		baseProcedure: 't.procedure',
@@ -56,13 +58,24 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 				if (
 					Node.isIdentifier(callNamespaceOrCallExpression)
-					&& callNamespaceOrCallExpression.getText() === resolvedConfig.trpcNamespace
 				) {
-					const procedureCallType = firstChild.getChildAtIndex(2).getText()
-					const path = handleReactHookCall(procedureCallType, node)
+					const namespace = callNamespaceOrCallExpression.getText()
+					if (resolvedConfig.reactNamespace.includes(namespace)) {
+						const procedureCallType = firstChild.getChildAtIndex(2).getText()
+						const path = handleReactHookCall(procedureCallType, node)
 
-					if (!path) return
-					firstChild.replaceWithText(`${resolvedConfig.trpcNamespace}.${path}.${procedureCallType}`)
+						if (!path) return
+						firstChild.replaceWithText(`${resolvedConfig.reactNamespace}.${path}.${procedureCallType}`)
+						return
+					}
+
+					if (resolvedConfig.callerNamespace.includes(namespace)) {
+						const path = handleCallerCall(node)
+
+						if (!path) return
+						firstChild.replaceWithText(`${resolvedConfig.callerNamespace}.${path}`)
+						return
+					}
 				}
 			})
 

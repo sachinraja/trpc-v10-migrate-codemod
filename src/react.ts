@@ -4,8 +4,7 @@ import { getStringFromStringOrArrayLiteral } from './utils.js'
 export const handleReactHookCall = (type: string, callExpression: CallExpression) => {
 	if (type === 'useQuery') {
 		const arguments_ = callExpression.getArguments()
-		const pathAndInputArgument = arguments_[0]
-		const configArgument = arguments_[1]
+		const [pathAndInputArgument, configArgument] = arguments_
 
 		if (Node.isObjectLiteralExpression(configArgument)) {
 			const trpcPropertyNames = ['context', 'ssr']

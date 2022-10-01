@@ -7,7 +7,10 @@ import { getDefinedProperties } from './utils.js'
 runExit(
 	class extends Command {
 		tsconfigPath = Option.String('--tsconfig-path', { description: 'filepath of tsconfig.json' })
-		trpcNamespace = Option.String('--trpc-namespace', { description: 'namespace of the tRPC react hooks' })
+		reactNamespace = Option.Array('--trpc-namespace', { description: 'namespace of the tRPC react hooks' })
+		callerNamespace = Option.Array('--caller-namespace', {
+			description: 'namespace of the tRPC callers',
+		})
 		routerFactory = Option.Array('--router-factory', {
 			description: 'name of the function used to create your routers',
 		})
@@ -56,7 +59,7 @@ runExit(
 			})
 
 			await transformv10Migration(getDefinedProperties({
-				trpcNamespace: this.trpcNamespace,
+				reactNamespace: this.reactNamespace,
 				routerFactory: this.routerFactory,
 				tsconfigPath: this.tsconfigPath,
 				baseProcedure: this.baseProcedure,
