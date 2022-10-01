@@ -13,6 +13,9 @@ export const getStringFromStringOrArrayLiteral = (node: Node) => {
 
 export const writeValueFromObjectLiteralElement = (writer: CodeBlockWriter, node: ObjectLiteralElementLike) => {
 	if (Node.isMethodDeclaration(node)) {
+		if (node.isAsync()) {
+			writer.write('async ')
+		}
 		const parameters = node.getParameters().map((parameter) => parameter.getText())
 		return writer.write('(').write(parameters.join(', ')).write(') => ').inlineBlock(() => {
 			writer.write(node.getBodyText() ?? '')
