@@ -34,9 +34,6 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 			const filePath = sourceFile.getFilePath()
 			let serverHasChanged = false
-			if (!filePath.endsWith('routers/org.ts')) {
-				return
-			}
 
 			sourceFile.forEachDescendant((node) => {
 				if (!Node.isCallExpression(node)) return
