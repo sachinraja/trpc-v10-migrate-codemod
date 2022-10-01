@@ -11,7 +11,6 @@ export const handleSolidHookCall = (
 		if (Node.isArrowFunction(pathArgument)) {
 			const body = pathArgument.getBody()
 			if (Node.isArrayLiteralExpression(body)) {
-				console.log('isarray=true')
 				const elements = body.getElements()
 				const [pathElement, argumentsElement] = elements
 				callExpression.insertArgument(0, argumentsElement.getText())
