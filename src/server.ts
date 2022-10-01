@@ -110,7 +110,7 @@ export const getRouterUnits = (
 	return getRouterUnits({ node: callExpressionParent, units, middlewares: newMiddlewares })
 }
 
-type ProcedureOrRouterRecord = Record<string, ProcedureUnit | RouterShape>
+type ProcedureOrRouterRecord = Record<string, { procedure: ProcedureUnit } | { router: RouterShape }>
 interface RouterShape extends Pick<RouterUnit, 'tag' | 'prefix'> {
 	units: ProcedureOrRouterRecord
 	text?: string
@@ -120,49 +120,61 @@ type MiddlewareProcedureIdMap = Map<MiddlewareUnit[], string>
 
 const addProcedure = (shape: RouterShape, procedureUnit: ProcedureUnit, pathParts: string[], index = 0) => {
 	if (pathParts.length - 1 === index) {
-		shape.units[pathParts[index]] = procedureUnit
+		console.log(shape.units, pathParts[index])
+		shape.units[pathParts[index]] = {
+			...shape.units[pathParts[index]],
+			procedure: procedureUnit,
+		}
 		return
 	}
 
-	const thisRouter = shape.units[pathParts[index]] as RouterShape
-	if (thisRouter) {
-		addProcedure(thisRouter, procedureUnit, pathParts, index + 1)
-		return
+	let nextRouter: RouterShape
+	if (!('router' in (shape.units[pathParts[index]] ?? {}))) {
+		nextRouter = {
+			tag: 'router',
+			units: {},
+		}
+		shape.units[pathParts[index]] = {
+			...shape.units[pathParts[index]],
+			router: nextRouter,
+		}
+	} else {
+		nextRouter = (shape.units[pathParts[index]] as { router: RouterShape }).router
 	}
 
-	const router: RouterShape = {
-		tag: 'router',
-		prefix: pathParts[index],
-		units: {},
-	}
-	shape.units[pathParts[index]] = router
-	addProcedure(router, procedureUnit, pathParts, index + 1)
+	addProcedure(nextRouter, procedureUnit, pathParts, index + 1)
 }
 
 const addRouter = (shape: RouterShape, routerUnit: RouterUnit, pathParts: string[], index = 0) => {
 	if (pathParts.length - 1 === index) {
 		shape.units[pathParts[index]] = {
-			tag: 'router',
-			prefix: pathParts[index],
-			text: routerUnit.identifier,
-			units: {},
+			...shape.units[pathParts[index]],
+			router: {
+				tag: 'router',
+				prefix: pathParts[index],
+				text: routerUnit.identifier,
+				units: {},
+			},
 		}
 		return
 	}
 
-	const thisRouter = shape.units[pathParts[index]] as RouterShape
-	if (thisRouter) {
-		addRouter(thisRouter, routerUnit, pathParts, index + 1)
-		return
+	let nextRouter: RouterShape
+	if (!('router' in (shape.units[pathParts[index]] ?? {}))) {
+		nextRouter = {
+			tag: 'router',
+			prefix: pathParts[index],
+			units: {},
+		}
+		shape.units[pathParts[index]] = {
+			...shape.units[pathParts[index]],
+			router: nextRouter,
+		}
+	} else {
+		nextRouter = (shape.units[pathParts[index]] as { router: RouterShape }).router
 	}
 
-	const router: RouterShape = {
-		tag: 'router',
-		prefix: pathParts[index],
-		units: {},
-	}
-	shape.units[pathParts[index]] = router
-	addRouter(router, routerUnit, pathParts, index + 1)
+	addRouter(nextRouter, routerUnit, pathParts, index + 1)
 }
 
 const writeProcedure = (options: { writer: CodeBlockWriter; unit: ProcedureUnit; baseProcedureId: string }) => {
@@ -195,45 +207,55 @@ const writeProcedure = (options: { writer: CodeBlockWriter; unit: ProcedureUnit;
 const writeShape = (
 	options: {
 		writer: CodeBlockWriter
-		procedureOrShape: RouterShape | ProcedureUnit
+		procedureOrRouter: { procedure: ProcedureUnit } | { router: RouterShape }
 		path?: string
 		middlewaresProcedureIdMap: MiddlewareProcedureIdMap
 		config: MigrateConfig
 	},
 ) => {
-	const { writer, procedureOrShape, path, middlewaresProcedureIdMap, config } = options
-	if (path) {
-		writer.write(path).write(': ')
+	const { writer, procedureOrRouter, path, middlewaresProcedureIdMap, config } = options
+
+	if ('procedure' in procedureOrRouter) {
+		if (path) {
+			writer.write(path).write(': ')
+		}
+		writeProcedure({
+			writer,
+			unit: procedureOrRouter.procedure,
+			baseProcedureId: middlewaresProcedureIdMap.get(procedureOrRouter.procedure.middlewares) ?? config.baseProcedure,
+		})
+
+		if (path) {
+			writer.write(',')
+		}
 	}
 
-	if (procedureOrShape.tag === 'router') {
-		if ('text' in procedureOrShape) {
-			const { text } = procedureOrShape
+	if ('router' in procedureOrRouter) {
+		if (path) {
+			writer.write(path).write(': ')
+		}
+
+		if ('text' in procedureOrRouter) {
+			const { text } = procedureOrRouter
 			writer.write(`${text},`)
 			return
 		}
 
 		writer.write(`t.router(`).inlineBlock(() => {
-			for (const [path, nestedShape] of Object.entries(procedureOrShape.units)) {
+			for (const [path, nestedShape] of Object.entries(procedureOrRouter.router.units)) {
 				writeShape({
 					writer,
-					procedureOrShape: nestedShape,
+					procedureOrRouter: nestedShape,
 					path,
 					middlewaresProcedureIdMap,
 					config,
 				})
 			}
 		}).write(')')
-	} else {
-		writeProcedure({
-			writer,
-			unit: procedureOrShape,
-			baseProcedureId: middlewaresProcedureIdMap.get(procedureOrShape.middlewares) ?? config.baseProcedure,
-		})
-	}
 
-	if (path) {
-		writer.write(',')
+		if (path) {
+			writer.write(',')
+		}
 	}
 
 	writer.newLine()
@@ -323,7 +345,7 @@ export const writeNewRouter = (
 
 	if (mergeRouterUnits.length > 0) {
 		const writer = project.createWriter()
-		writeShape({ writer, procedureOrShape: routerShape, middlewaresProcedureIdMap, config })
+		writeShape({ writer, procedureOrRouter: { router: routerShape }, middlewaresProcedureIdMap, config })
 
 		const newRouterText = writer.toString()
 		const hash = getStringHash(newRouterText)
@@ -348,7 +370,7 @@ export const writeNewRouter = (
 		topNode.replaceWithText((writer) => {
 			writeShape({
 				writer,
-				procedureOrShape: routerShape,
+				procedureOrRouter: { router: routerShape },
 				middlewaresProcedureIdMap,
 				config,
 			})
