@@ -8,7 +8,7 @@ runExit(
 	class extends Command {
 		tsconfigPath = Option.String('--tsconfig-path', { description: 'filepath of tsconfig.json' })
 		trpcNamespace = Option.String('--trpc-namespace', { description: 'namespace of the tRPC react hooks' })
-		routerFactory = Option.String('--router-factory', {
+		routerFactory = Option.Array('--router-factory', {
 			description: 'name of the function used to create your routers',
 		})
 		baseProcedure = Option.String('--base-procedure', {

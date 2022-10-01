@@ -2,7 +2,7 @@ import { router, TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { exampleRouter } from './example.js'
 
-const appRouter = router()
+const appRouter = createProtectedRouter()
 	.query('hello', {
 		output: z.string(),
 		resolve() {
