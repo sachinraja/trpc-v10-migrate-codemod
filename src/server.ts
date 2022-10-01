@@ -124,8 +124,9 @@ const addProcedure = (shape: RouterShape, procedureUnit: ProcedureUnit, pathPart
 		return
 	}
 
-	const thisRouter = shape.units[pathParts[index]] as RouterShape
-	if (thisRouter) {
+	const thisRouter = shape.units[pathParts[index]] as ProcedureUnit | RouterShape
+
+	if (thisRouter.tag === 'router') {
 		addProcedure(thisRouter, procedureUnit, pathParts, index + 1)
 		return
 	}
