@@ -120,7 +120,6 @@ type MiddlewareProcedureIdMap = Map<MiddlewareUnit[], string>
 
 const addProcedure = (shape: RouterShape, procedureUnit: ProcedureUnit, pathParts: string[], index = 0) => {
 	if (pathParts.length - 1 === index) {
-		console.log(shape.units, pathParts[index])
 		shape.units[pathParts[index]] = {
 			...shape.units[pathParts[index]],
 			procedure: procedureUnit,
