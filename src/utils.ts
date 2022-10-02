@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
+import preferredPM from 'preferred-pm'
 import { CodeBlockWriter, Node, ObjectLiteralElementLike, SyntaxKind } from 'ts-morph'
 
 export const execa = promisify(exec)
@@ -81,20 +82,31 @@ export const modifyVersions = async (packageJSON: string) => {
 		} = JSON.parse(
 			await fs.readFile(path.join(directory, packageJSON), 'utf8'),
 		)
+		const packageManager = await preferredPM(directory)
 		let shouldPrint = false
 		shouldPrint = !!(
 			pkgs.dependencies
-			&& (await updateOutdatedPackages(directory, pkgs.dependencies))
+			&& (await updateOutdatedPackages(
+				packageManager?.name,
+				directory,
+				pkgs.dependencies,
+			))
 		)
-		shouldPrint = !!(
-			pkgs.devDependencies
-			&& (await updateOutdatedPackages(directory, pkgs.devDependencies, true))
-		)
+		if (pkgs.devDependencies) {
+			const maybePrint = await updateOutdatedPackages(
+				packageManager?.name,
+				directory,
+				pkgs.devDependencies,
+				true,
+			)
+			shouldPrint ||= maybePrint
+		}
 		!shouldPrint && console.log('Packages are up to date!')
 	}
 }
 
 const updateOutdatedPackages = async (
+	packageManager: string | undefined,
 	directory: string,
 	deps: Record<string, string>,
 	isDevelopment?: boolean,
@@ -108,15 +120,14 @@ const updateOutdatedPackages = async (
 		)
 		.map(([packageName]) => `${packageName}@next`)
 	if (results.length > 0) {
+		packageManager ??= 'npm'
 		console.log(
-			`Updating ${isDevelopment ? 'dev' : ''}Dependencies: ${
-				results.join(
-					', ',
-				)
-			}`,
+			`(${packageManager}) Updating ${isDevelopment ? 'dev' : ''}Dependencies: ${results.join(', ')}`,
 		)
 		await execa(
-			`npm install ${results.join(' ')}${isDevelopment ? ' -D' : ''}`,
+			`${packageManager} ${packageManager === 'yarn' ? 'add' : 'install'}${isDevelopment ? ' -D' : ''} ${
+				results.join(' ')
+			}`,
 			{
 				cwd: directory,
 			},
