@@ -2,12 +2,12 @@ import { ImportDeclarationStructure, OptionalKind } from 'ts-morph'
 
 export interface MigrateConfig {
 	/**
-	 * namespace of the tRPC React hooks
+	 * namespace of your tRPC React hooks
 	 * @default ['trpc']
 	 */
 	reactNamespace: string[]
 	/**
-	 * namespace of the tRPC callers
+	 * namespace of your tRPC createCallers
 	 * @default ['caller']
 	 */
 	callerNamespace: string[]
