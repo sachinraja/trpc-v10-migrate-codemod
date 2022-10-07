@@ -1,3 +1,4 @@
+import { camelCase } from 'lodash-es'
 import { CodeBlockWriter, Node, ObjectLiteralElementLike, SyntaxKind } from 'ts-morph'
 
 export const getStringFromStringOrArrayLiteral = (node: Node) => {
@@ -52,3 +53,11 @@ export const getDefinedProperties = <TObject extends Record<string, unknown>>(ob
 		Object.entries(object).filter(([, v]) => v !== undefined),
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	) as any
+
+/**
+ * Normalizes a procedure path so that it can be used as a symbol.
+ *
+ * @param path The path to normalize
+ * @returns The normalized path
+ */
+export const normalizeProcedurePath = (path: string) => path.split('.').map((it) => camelCase(it)).join('.')
