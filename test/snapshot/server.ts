@@ -32,6 +32,12 @@ const appRouter = router()
 			}
 		},
 	})
+	.query('post.get-title', {
+		input: z.object({ title: z.string() }),
+		resolve: ({ input }) => {
+			return input.title
+		},
+	})
 	.merge('example', exampleRouter)
 	.middleware(async ({ ctx, next }) => {
 		if (!ctx.user?.isAdmin) {

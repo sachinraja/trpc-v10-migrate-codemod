@@ -33,6 +33,9 @@ const appRouter = t.router({
         				title: 'hello',
         			}
         		}),
+        getTitle: t.procedure.input(z.object({ title: z.string() })).query(({ input }) => {
+        			return input.title
+        		}),
     }),
     secretPlace: procedure_300161978.query(() => {
         return 'a key'
@@ -66,16 +69,20 @@ exports[`performs correct transformations 3`] = `
 "import { trpc } from '~/utils/trpc'
 
 function Component() {
-	const data = trpc.useQuery(['post.byId', { id: 1 }], {
-		onSuccess() {
-			console.log('success')
-		},
-		context: {
-			foo: 'bar',
-		},
-	})
+    const data = trpc.post.byId.useQuery({ id: 1 }, {
+        onSuccess() {
+            console.log('success')
+        },
+        trpc: {
+            context: {
+                foo: 'bar',
+            }
+        }
+    })
 
-	const mutation = trpc.useMutation('post.create')
+	trpc.post.getTitle.useQuery({ title: 'hello' })
+
+	const mutation = trpc.post.create.useMutation()
 }
 "
 `;

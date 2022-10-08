@@ -56,9 +56,7 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (!Node.isPropertyAccessExpression(firstChild)) return
 				const callNamespaceOrCallExpression = firstChild.getFirstChild()
 
-				if (
-					Node.isIdentifier(callNamespaceOrCallExpression)
-				) {
+				if (Node.isIdentifier(callNamespaceOrCallExpression)) {
 					const namespace = callNamespaceOrCallExpression.getText()
 					if (resolvedConfig.reactNamespace.includes(namespace)) {
 						const procedureCallType = firstChild.getChildAtIndex(2).getText()

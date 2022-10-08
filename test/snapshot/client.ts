@@ -10,5 +10,7 @@ function Component() {
 		},
 	})
 
+	trpc.useQuery(['post.get-title', { title: 'hello' }])
+
 	const mutation = trpc.useMutation('post.create')
 }
