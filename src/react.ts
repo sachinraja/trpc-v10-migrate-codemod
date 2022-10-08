@@ -1,5 +1,5 @@
 import { CallExpression, Node, ObjectLiteralElementLike } from 'ts-morph'
-import { getStringFromStringOrArrayLiteral } from './utils.js'
+import { getStringFromStringOrArrayLiteral, normalizeProcedurePath } from './utils.js'
 
 export const handleReactHookCall = (type: string, callExpression: CallExpression) => {
 	if (type === 'useQuery') {
@@ -28,11 +28,11 @@ export const handleReactHookCall = (type: string, callExpression: CallExpression
 		if (Node.isArrayLiteralExpression(pathAndInputArgument)) {
 			const elements = pathAndInputArgument.getElements()
 
-			callExpression.insertArgument(0, elements[1].getText())
+			callExpression.insertArguments(0, elements.slice(1).map(it => it.getText()))
 			const pathElement = elements[0]
 
 			if (Node.isStringLiteral(pathElement)) {
-				const path = pathElement.getLiteralText()
+				const path = normalizeProcedurePath(pathElement.getLiteralText())
 				callExpression.removeArgument(pathAndInputArgument)
 				return path
 			}
@@ -43,7 +43,8 @@ export const handleReactHookCall = (type: string, callExpression: CallExpression
 		const arguments_ = callExpression.getArguments()
 		const pathArgument = arguments_[0]
 
-		const path = getStringFromStringOrArrayLiteral(pathArgument)
+		const rawPath = getStringFromStringOrArrayLiteral(pathArgument)
+		const path = rawPath ? normalizeProcedurePath(rawPath) : undefined
 
 		callExpression.removeArgument(pathArgument)
 		return path

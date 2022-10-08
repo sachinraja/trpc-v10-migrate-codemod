@@ -8,7 +8,12 @@ import {
 	VariableDeclarationKind,
 } from 'ts-morph'
 import { MigrateConfig } from './types.js'
-import { getStringHash, getStringLiteralOrText, writeValueFromObjectLiteralElement } from './utils.js'
+import {
+	getStringHash,
+	getStringLiteralOrText,
+	normalizeProcedurePath,
+	writeValueFromObjectLiteralElement,
+} from './utils.js'
 
 interface ProcedureUnit {
 	tag: 'procedure'
@@ -212,7 +217,8 @@ const writeShape = (
 		config: MigrateConfig
 	},
 ) => {
-	const { writer, procedureOrRouter, path, middlewaresProcedureIdMap, config } = options
+	const { writer, procedureOrRouter, path: rawPath, middlewaresProcedureIdMap, config } = options
+	const path = rawPath ? normalizeProcedurePath(rawPath) : undefined
 
 	if ('procedure' in procedureOrRouter) {
 		if (path) {

@@ -3,11 +3,13 @@ lockfileVersion: 5.4
 specifiers:
   '@sachinraja/eslint-config': 0.1.1
   '@trpc/server': 9.27.2
+  '@types/lodash-es': ^4.17.6
   '@types/node': 18.7.14
   clipanion: 3.2.0-rc.12
   dprint: 0.31.1
   eslint: 8.23.0
   husky: 8.0.1
+  lodash-es: ^4.17.21
   nano-staged: 0.8.0
   npm-run-all: 4.1.5
   ts-morph: 16.0.0
@@ -21,12 +23,14 @@ specifiers:
 
 dependencies:
   clipanion: 3.2.0-rc.12_typanion@3.12.0
+  lodash-es: 4.17.21
   ts-morph: 16.0.0
   typanion: 3.12.0
 
 devDependencies:
   '@sachinraja/eslint-config': 0.1.1_yqf6kl63nyoq5megxukfnom5rm
   '@trpc/server': 9.27.2
+  '@types/lodash-es': 4.17.6
   '@types/node': 18.7.14
   dprint: 0.31.1
   eslint: 8.23.0
@@ -205,6 +209,16 @@ packages:
 
   /@types/json-schema/7.0.11:
     resolution: {integrity: sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==}
+    dev: true
+
+  /@types/lodash-es/4.17.6:
+    resolution: {integrity: sha512-R+zTeVUKDdfoRxpAryaQNRKk3105Rrgx2CFRClIgRGaqDTdjsm8h6IYA8ir584W3ePzkZfst5xIgDwYrlh9HLg==}
+    dependencies:
+      '@types/lodash': 4.14.186
+    dev: true
+
+  /@types/lodash/4.14.186:
+    resolution: {integrity: sha512-eHcVlLXP0c2FlMPm56ITode2AgLMSa6aJ05JTTbYbI+7EMkCEE5qk2E41d5g2lCVTqRe0GnnRFurmlCsDODrPw==}
     dev: true
 
   /@types/node/18.7.14:
@@ -1788,6 +1802,10 @@ packages:
     dependencies:
       p-locate: 5.0.0
     dev: true
+
+  /lodash-es/4.17.21:
+    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: false
 
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
