@@ -61,3 +61,13 @@ export const getDefinedProperties = <TObject extends Record<string, unknown>>(ob
  * @returns The normalized path
  */
 export const normalizeProcedurePath = (path: string) => path.split('.').map((it) => camelCase(it)).join('.')
+
+export const importsMappingToImportDeclaration = (imports: string[]) => {
+	return imports.map((serverImport) => {
+		const [namedImport, moduleSpecifier] = serverImport.split(':')
+		return {
+			moduleSpecifier,
+			namedImports: [namedImport],
+		}
+	})
+}

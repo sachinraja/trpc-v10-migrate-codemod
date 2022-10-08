@@ -1,0 +1,81 @@
+// Vitest Snapshot v1
+
+exports[`performs correct transformations 1`] = `
+"import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
+import { exampleRouter } from './example.js'
+import { t } from \\"~/server/trpc\\";
+import { adminProcedure } from \\"~/server/trpc\\";
+
+const middleware_300161978 = t.middleware(async ({ ctx, next }) => {
+    if (!ctx.user?.isAdmin) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' })
+    }
+    return next()
+});
+const procedure_300161978 = t.procedure.use(middleware_300161978);
+const appRouter = t.router({
+    hello: t.procedure.output(z.string()).query(() => {
+        return 'world'
+    }),
+    post: t.procedure.query(() => {
+        return 'post'
+    }),post: t.router({
+        create: t.procedure.input(z.object({ title: z.string() })).mutation(async ({ input }) => {
+            return {
+            	id: 1,
+            	title: input.title,
+            }
+        }),
+        byId: t.procedure.input(z.object({ id: z.string() })).query(({ input }) => {
+        			return {
+        				id: input.id,
+        				title: 'hello',
+        			}
+        		}),
+    }),
+    secretPlace: procedure_300161978.query(() => {
+        return 'a key'
+    }),
+    example: t.router({
+    }),
+})
+
+
+const caller = appRouter.createCaller({})
+await caller.post.byId({ id: '1923071203' })
+"
+`;
+
+exports[`performs correct transformations 2`] = `
+"import { t } from \\"~/server/trpc\\";
+import { adminProcedure } from \\"~/server/trpc\\";
+
+const createProtectedRouter = router
+
+export const exampleRouter = t.router({
+    thing: t.procedure.query(() => {
+        return 'example'
+    }),
+})
+
+"
+`;
+
+exports[`performs correct transformations 3`] = `
+"import { trpc } from '~/utils/trpc'
+
+function Component() {
+	const data = trpc.useQuery(['post.byId', { id: 1 }], {
+		onSuccess() {
+			console.log('success')
+		},
+		context: {
+			foo: 'bar',
+		},
+	})
+
+	const mutation = trpc.useMutation('post.create')
+}
+"
+`;

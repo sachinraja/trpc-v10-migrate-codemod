@@ -2,7 +2,7 @@
 import { Command, Option, runExit } from 'clipanion'
 import { transformv10Migration } from './index.js'
 import { MigrateConfig } from './types.js'
-import { getDefinedProperties } from './utils.js'
+import { getDefinedProperties, importsMappingToImportDeclaration } from './utils.js'
 
 runExit(
 	class extends Command {
@@ -43,29 +43,18 @@ runExit(
 
 		async execute() {
 			console.log('migrating...')
-			const serverImports: MigrateConfig['serverImports'] = this.imports.map((serverImport) => {
-				const [namedImport, moduleSpecifier] = serverImport.split(':')
-				return {
-					moduleSpecifier,
-					namedImports: [namedImport],
-				}
-			})
-
-			const removeServerImports: MigrateConfig['removeServerImports'] = this.removeImports.map((serverImport) => {
-				const [namedImport, moduleSpecifier] = serverImport.split(':')
-				return {
-					moduleSpecifier,
-					namedImports: [namedImport],
-				}
-			})
 
 			await transformv10Migration(getDefinedProperties({
 				reactNamespace: this.reactNamespace,
 				routerFactory: this.routerFactory,
 				tsconfigPath: this.tsconfigPath,
 				baseProcedure: this.baseProcedure,
-				serverImports,
-				removeServerImports,
+				serverImports: importsMappingToImportDeclaration(
+					this.imports,
+				),
+				removeServerImports: importsMappingToImportDeclaration(
+					this.removeImports,
+				),
 			}))
 		}
 	},

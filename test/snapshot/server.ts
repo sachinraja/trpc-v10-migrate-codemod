@@ -45,4 +45,5 @@ const appRouter = router()
 		},
 	})
 
-await caller.query('greeting', { text: 'hi' })
+const caller = appRouter.createCaller({})
+await caller.query('post.byId', { id: '1923071203' })
