@@ -16,15 +16,15 @@ it('performs correct transformations', async () => {
 		routerFactory: ['createProtectedRouter', 'router'],
 	})
 
-	const [transformedServer, transformedExample, transformedClient] = await Promise.all([
+	const [transformedServer, transformedServer2, transformedReact] = await Promise.all([
 		readFile(path.join(tempDir, 'server.ts'), 'utf8'),
-		readFile(path.join(tempDir, 'example.ts'), 'utf8'),
-		readFile(path.join(tempDir, 'client.ts'), 'utf8'),
+		readFile(path.join(tempDir, 'server2.ts'), 'utf8'),
+		readFile(path.join(tempDir, 'react.ts'), 'utf8'),
 	])
 
 	expect(transformedServer).toMatchSnapshot()
-	expect(transformedExample).toMatchSnapshot()
-	expect(transformedClient).toMatchSnapshot()
+	expect(transformedServer2).toMatchSnapshot()
+	expect(transformedReact).toMatchSnapshot()
 
 	await rm(tempDir, { recursive: true })
 })

@@ -19,6 +19,7 @@ Current transformations:
 
 - v9 router to v10 router
 - v9 React client to v10 proxy React client
+- `createCaller` to proxy caller
 
 ### Options
 
@@ -29,6 +30,8 @@ Run `npx trpc-v10-migrate-codemod --help` to see all options.
 `--react-namespace` - namespace of your tRPC React hooks (can be specified multiple times) (default = 'trpc')
 
 `--caller-namespace` - namespace of your tRPC `createCaller`s (i.e. `const caller = appRouter.createCaller()`) (can be specified multiple times) (default = 'caller')
+
+`--context-namespace` - namespace of your tRPC context helpers (i.e. `const utils = trpc.useContext()`) (can be specified multiple times) (default = 'utils')
 
 `--router-factory` - the function you use to create your routers (i.e. `createRouter`, `createProtectedRouter`) (can be specified multiple times) (default = ['router'])
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import { Command, Option, runExit } from 'clipanion'
 import { transformv10Migration } from './index.js'
-import { MigrateConfig } from './types.js'
 import { getDefinedProperties, importsMappingToImportDeclaration } from './utils.js'
 
 runExit(
@@ -12,6 +11,10 @@ runExit(
 		callerNamespace = Option.Array('--caller-namespace', {
 			description: 'namespace of your tRPC createCallers',
 		})
+		contextNamespace = Option.Array('--context-namespace', {
+			description: 'namespace of your tRPC context helpers',
+		})
+
 		routerFactory = Option.Array('--router-factory', {
 			description: 'name of the function used to create your routers',
 		})
@@ -46,6 +49,8 @@ runExit(
 
 			await transformv10Migration(getDefinedProperties({
 				reactNamespace: this.reactNamespace,
+				callerNamespace: this.callerNamespace,
+				contextNamespace: this.contextNamespace,
 				routerFactory: this.routerFactory,
 				tsconfigPath: this.tsconfigPath,
 				baseProcedure: this.baseProcedure,

@@ -1,6 +1,6 @@
 import { router, TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import { exampleRouter } from './example.js'
+import { exampleRouter } from './server2.js'
 
 const appRouter = router()
 	.query('hello', {

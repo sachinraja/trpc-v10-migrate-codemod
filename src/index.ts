@@ -1,6 +1,12 @@
 import { Node, Project } from 'ts-morph'
 import { handleCallerCall } from './caller.js'
-import { handleReactHookCall } from './react.js'
+import {
+	contextHelpers,
+	contextHelpersToRename,
+	handleContextHelperCall,
+	handleReactHookCall,
+	OldContextHelper,
+} from './react.js'
 import { getRouterUnits, writeNewRouter } from './server.js'
 import { MigrateConfig } from './types.js'
 
@@ -8,6 +14,7 @@ const resolveConfig = (config: Partial<MigrateConfig>): MigrateConfig => {
 	return {
 		reactNamespace: ['trpc'],
 		callerNamespace: ['caller'],
+		contextNamespace: ['utils'],
 		routerFactory: ['router'],
 		tsconfigPath: 'tsconfig.json',
 		baseProcedure: 't.procedure',
@@ -60,18 +67,35 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 					const namespace = callNamespaceOrCallExpression.getText()
 					if (resolvedConfig.reactNamespace.includes(namespace)) {
 						const procedureCallType = firstChild.getChildAtIndex(2).getText()
-						const path = handleReactHookCall(procedureCallType, node)
 
+						const path = handleReactHookCall(procedureCallType, node)
 						if (!path) return
+
 						firstChild.replaceWithText(`${resolvedConfig.reactNamespace}.${path}.${procedureCallType}`)
 						return
 					}
 
 					if (resolvedConfig.callerNamespace.includes(namespace)) {
 						const path = handleCallerCall(node)
-
 						if (!path) return
+
 						firstChild.replaceWithText(`${resolvedConfig.callerNamespace}.${path}`)
+						return
+					}
+
+					if (resolvedConfig.contextNamespace.includes(namespace)) {
+						const contextHelper = firstChild.getChildAtIndex(2).getText()
+						if (!contextHelpers.includes(contextHelper as OldContextHelper)) return
+
+						const renamedHelper = contextHelpersToRename[contextHelper as OldContextHelper]
+
+						const { path, requiresUndefinedInput } = handleContextHelperCall(node)
+						if (!path) return
+						if (requiresUndefinedInput) {
+							node.insertArgument(0, 'undefined')
+						}
+
+						firstChild.replaceWithText(`${resolvedConfig.contextNamespace}.${path}.${renamedHelper}`)
 						return
 					}
 				}

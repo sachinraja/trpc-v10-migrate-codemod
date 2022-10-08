@@ -1,16 +1,5 @@
 import { camelCase } from 'lodash-es'
-import { CodeBlockWriter, Node, ObjectLiteralElementLike, SyntaxKind } from 'ts-morph'
-
-export const getStringFromStringOrArrayLiteral = (node: Node) => {
-	if (Node.isStringLiteral(node)) {
-		return node.getLiteralValue()
-	}
-	if (Node.isArrayLiteralExpression(node)) {
-		return node.getElements()[0]
-			.asKindOrThrow(SyntaxKind.StringLiteral)
-			.getLiteralText()
-	}
-}
+import { CodeBlockWriter, Node, ObjectLiteralElementLike } from 'ts-morph'
 
 export const writeValueFromObjectLiteralElement = (writer: CodeBlockWriter, node: ObjectLiteralElementLike) => {
 	if (Node.isMethodDeclaration(node)) {

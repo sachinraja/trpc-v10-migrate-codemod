@@ -3,7 +3,7 @@
 exports[`performs correct transformations 1`] = `
 "import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import { exampleRouter } from './example.js'
+import { exampleRouter } from './server2.js'
 import { t } from \\"~/server/trpc\\";
 import { adminProcedure } from \\"~/server/trpc\\";
 
@@ -82,7 +82,19 @@ function Component() {
 
 	trpc.post.getTitle.useQuery({ title: 'hello' })
 
-	const mutation = trpc.post.create.useMutation()
+	const mutation = trpc.post.create.useMutation({
+		onSuccess() {
+			console.log('success')
+		},
+	})
+
+	const utils = trpc.useContext()
+
+	utils.post.byId.invalidate(undefined, { active: true })
+	utils.post.byId.cancel()
+	utils.prefetchQuery([path])
+	utils.post.byId.prefetch({ id: 1 })
+	utils.post.getTitle.prefetch({ title: 'hello' })
 }
 "
 `;

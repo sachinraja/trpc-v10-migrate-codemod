@@ -11,6 +11,11 @@ export interface MigrateConfig {
 	 * @default ['caller']
 	 */
 	callerNamespace: string[]
+	/**
+	 * namespace of your tRPC context helpers
+	 * @default ['utils']
+	 */
+	contextNamespace: string[]
 
 	/**
 	 * the function you use to create your routers
