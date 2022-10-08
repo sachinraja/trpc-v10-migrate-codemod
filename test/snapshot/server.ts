@@ -14,6 +14,11 @@ const appRouter = router()
 			return 'post'
 		},
 	})
+	.mutation('post', {
+		resolve() {
+			return 'post'
+		},
+	})
 	.mutation('post.create', {
 		input: z.object({ title: z.string() }),
 		async resolve({ input }) {

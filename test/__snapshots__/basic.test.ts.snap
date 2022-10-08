@@ -20,6 +20,8 @@ const appRouter = t.router({
     }),
     post: t.procedure.query(() => {
         return 'post'
+    }),post: t.procedure.mutation(() => {
+        return 'post'
     }),post: t.router({
         create: t.procedure.input(z.object({ title: z.string() })).mutation(async ({ input }) => {
             return {

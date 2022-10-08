@@ -115,7 +115,7 @@ export const getRouterUnits = (
 	return getRouterUnits({ node: callExpressionParent, units, middlewares: newMiddlewares })
 }
 
-type ProcedureOrRouterRecord = Record<string, { procedure: ProcedureUnit } | { router: RouterShape }>
+type ProcedureOrRouterRecord = Record<string, { procedures: ProcedureUnit[] } | { router: RouterShape }>
 interface RouterShape extends Pick<RouterUnit, 'tag' | 'prefix'> {
 	units: ProcedureOrRouterRecord
 	text?: string
@@ -125,9 +125,14 @@ type MiddlewareProcedureIdMap = Map<MiddlewareUnit[], string>
 
 const addProcedure = (shape: RouterShape, procedureUnit: ProcedureUnit, pathParts: string[], index = 0) => {
 	if (pathParts.length - 1 === index) {
-		shape.units[pathParts[index]] = {
-			...shape.units[pathParts[index]],
-			procedure: procedureUnit,
+		const procedures = (shape.units[pathParts[index]] as { procedures?: ProcedureUnit[] } | undefined)?.procedures
+		if (procedures) {
+			procedures.push(procedureUnit)
+		} else {
+			shape.units[pathParts[index]] = {
+				...shape.units[pathParts[index]],
+				procedures: [procedureUnit],
+			}
 		}
 		return
 	}
@@ -211,7 +216,7 @@ const writeProcedure = (options: { writer: CodeBlockWriter; unit: ProcedureUnit;
 const writeShape = (
 	options: {
 		writer: CodeBlockWriter
-		procedureOrRouter: { procedure: ProcedureUnit } | { router: RouterShape }
+		procedureOrRouter: { procedures: ProcedureUnit[] } | { router: RouterShape }
 		path?: string
 		middlewaresProcedureIdMap: MiddlewareProcedureIdMap
 		config: MigrateConfig
@@ -220,18 +225,21 @@ const writeShape = (
 	const { writer, procedureOrRouter, path: rawPath, middlewaresProcedureIdMap, config } = options
 	const path = rawPath ? normalizeProcedurePath(rawPath) : undefined
 
-	if ('procedure' in procedureOrRouter) {
-		if (path) {
-			writer.write(path).write(': ')
-		}
-		writeProcedure({
-			writer,
-			unit: procedureOrRouter.procedure,
-			baseProcedureId: middlewaresProcedureIdMap.get(procedureOrRouter.procedure.middlewares) ?? config.baseProcedure,
-		})
+	if ('procedures' in procedureOrRouter) {
+		for (const procedure of procedureOrRouter.procedures) {
+			if (path) {
+				writer.write(path).write(': ')
+			}
 
-		if (path) {
-			writer.write(',')
+			writeProcedure({
+				writer,
+				unit: procedure,
+				baseProcedureId: middlewaresProcedureIdMap.get(procedure.middlewares) ?? config.baseProcedure,
+			})
+
+			if (path) {
+				writer.write(',')
+			}
 		}
 	}
 
