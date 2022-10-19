@@ -5,7 +5,7 @@ specifiers:
   '@trpc/server': 9.27.2
   '@types/lodash-es': ^4.17.6
   '@types/node': 18.7.14
-  clipanion: 3.2.0-rc.12
+  clipanion: 3.2.0-rc.13
   dprint: 0.31.1
   eslint: 8.23.0
   husky: 8.0.1
@@ -22,7 +22,7 @@ specifiers:
   zod: 3.18.0
 
 dependencies:
-  clipanion: 3.2.0-rc.12_typanion@3.12.0
+  clipanion: 3.2.0-rc.13_typanion@3.12.0
   lodash-es: 4.17.21
   ts-morph: 16.0.0
   typanion: 3.12.0
@@ -549,8 +549,8 @@ packages:
       escape-string-regexp: 1.0.5
     dev: true
 
-  /clipanion/3.2.0-rc.12_typanion@3.12.0:
-    resolution: {integrity: sha512-yhxjhyfuOtQW11CLgfqG3aWsVNu52CzQd18tgAn4P/AMaEvaLbB1x9qmKb5K5HPvjBzDG6JWSHdJOIfqQgOo7Q==}
+  /clipanion/3.2.0-rc.13_typanion@3.12.0:
+    resolution: {integrity: sha512-JYuPIaZZOl4nTUP4BMXmHGxYkAD2gc0m5GxZKr2eKEjquyFj/WBbkERDesnUsQKewUmWvBzzxdbf8WQ/GBDduQ==}
     peerDependencies:
       typanion: '*'
     dependencies:
