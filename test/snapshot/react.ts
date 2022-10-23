@@ -1,3 +1,4 @@
+import { createTRPCReact } from '@trpc/react'
 import { trpc } from '~/utils/trpc'
 
 function Component() {

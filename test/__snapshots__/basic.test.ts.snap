@@ -68,7 +68,8 @@ export const exampleRouter = t.router({
 `;
 
 exports[`performs correct transformations 3`] = `
-"import { trpc } from '~/utils/trpc'
+"import { createTRPCReact } from '@trpc/react-query'
+import { trpc } from '~/utils/trpc'
 
 function Component() {
     const data = trpc.post.byId.useQuery({ id: 1 }, {

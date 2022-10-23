@@ -126,6 +126,13 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				}
 			}
 
+			// always rename @trpc/react to @trpc/react-query
+			for (const importDeclaration of sourceFile.getImportDeclarations()) {
+				if (importDeclaration.getModuleSpecifierValue() === '@trpc/react') {
+					importDeclaration.setModuleSpecifier('@trpc/react-query')
+				}
+			}
+
 			console.log(`migrated ${filePath}`)
 			for (const router of sourceFileMigratedRouters) {
 				console.log(`  - migrated ${router}`)
