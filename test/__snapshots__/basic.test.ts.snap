@@ -109,6 +109,7 @@ function Component() {
 	utils.prefetchQuery([path])
 	utils.post.byId.prefetch({ id: 1 })
 	utils.post.getTitle.prefetch({ title: 'hello' })
+	utils.post.byId.setData({ id: 1 }, () => {})
 }
 "
 `;

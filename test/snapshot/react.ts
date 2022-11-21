@@ -35,4 +35,5 @@ function Component() {
 	utils.prefetchQuery([path])
 	utils.prefetchQuery(['post.byId', { id: 1 }])
 	utils.prefetchQuery(['post.get-title', { title: 'hello' }])
+	utils.setQueryData(['post.byId', { id: 1 }], () => {})
 }
