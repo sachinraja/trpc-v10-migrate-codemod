@@ -13,6 +13,15 @@ function Component() {
 
 	trpc.useQuery(['post.get-title', { title: 'hello' }])
 
+	trpc.useQuery(['hello'], {
+		thing: true,
+	})
+
+	trpc.useQuery(['hello'], {
+		thing: true,
+		ssr: true,
+	})
+
 	const mutation = trpc.useMutation('post.create', {
 		onSuccess() {
 			console.log('success')

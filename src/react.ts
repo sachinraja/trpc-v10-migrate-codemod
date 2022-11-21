@@ -1,4 +1,4 @@
-import { CallExpression, Node, ObjectLiteralElementLike } from 'ts-morph'
+import { CallExpression, Node, ObjectLiteralElementLike, SyntaxKind } from 'ts-morph'
 import { normalizeProcedurePath } from './utils.js'
 
 export const contextHelpers = [
@@ -70,10 +70,16 @@ export const handleReactHookCall = (type: string, callExpression: CallExpression
 				.map((property) => configArgument.getProperty(property))
 				.filter((node): node is ObjectLiteralElementLike => !!node)
 
-			configArgument.addPropertyAssignment({
-				name: 'trpc',
-				initializer: `{${trpcProperties.map((v) => v.getText()).join(',')}}`,
-			})
+			if (trpcProperties.length > 0) {
+				const trpcProperty = configArgument.getProperty('trpc')?.asKind(SyntaxKind.ObjectLiteralExpression)
+					?? configArgument.addPropertyAssignment({ name: 'trpc', initializer: '{}' }).getInitializerIfKind(
+						SyntaxKind.ObjectLiteralExpression,
+					)
+
+				if (trpcProperty) {
+					trpcProperty.addProperties(trpcProperties.map((property) => property.getText()))
+				}
+			}
 
 			for (const property of trpcProperties) {
 				property.remove()
