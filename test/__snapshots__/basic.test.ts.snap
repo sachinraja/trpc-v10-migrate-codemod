@@ -97,6 +97,8 @@ function Component() {
     })
 
 	trpc.hello.useQuery()
+	useQuery('todos', fetchTodos)
+	useQuery('todos', () => fetch('/todos'))
 
 	const mutation = trpc.post.create.useMutation({
 		onSuccess() {

@@ -48,7 +48,18 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 				if (Node.isIdentifier(firstChild)) {
 					const firstChildText = firstChild.getText()
-					if (resolvedConfig.reactNamespace.includes('') && ['useQuery', 'useMutation'].includes(firstChildText)) {
+					if (
+						resolvedConfig.reactNamespace.includes('') && ['useQuery', 'useMutation'].includes(firstChildText)
+						&& (Node.isIdentifier(node.getArguments()[1]) || Node)
+					) {
+						const secondArgument = node.getArguments()[1]
+						// if the second argument is an identifier or a function, it's likely not tRPC and we should skip it
+						if (
+							Node.isIdentifier(secondArgument) || Node.isFunctionExpression(secondArgument)
+							|| Node.isArrowFunction(secondArgument)
+						) {
+							return
+						}
 						const path = handleReactHookCall(firstChildText, node)
 						if (!path) return
 
