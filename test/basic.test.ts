@@ -14,6 +14,7 @@ it('performs correct transformations', async () => {
 		serverImports: importsMappingToImportDeclaration(['t:~/server/trpc', 'adminProcedure:~/server/trpc']),
 		removeServerImports: importsMappingToImportDeclaration(['router:@trpc/server']),
 		routerFactory: ['createProtectedRouter', 'router'],
+		reactNamespace: ['trpc', ''],
 	})
 
 	const [transformedServer, transformedServer2, transformedReact] = await Promise.all([

@@ -22,6 +22,8 @@ function Component() {
 		ssr: true,
 	})
 
+	useQuery(['hello'])
+
 	const mutation = trpc.useMutation('post.create', {
 		onSuccess() {
 			console.log('success')

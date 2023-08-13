@@ -7,7 +7,7 @@ runExit(
 	class extends Command {
 		tsconfigPath = Option.String('--tsconfig-path', { description: 'filepath of tsconfig.json' })
 
-		reactNamespace = Option.Array('--trpc-namespace', { description: 'namespace of your tRPC React hooks' })
+		reactNamespace = Option.Array('--react-namespace', { description: 'namespace of your tRPC React hooks' })
 		callerNamespace = Option.Array('--caller-namespace', {
 			description: 'namespace of your tRPC createCallers',
 		})

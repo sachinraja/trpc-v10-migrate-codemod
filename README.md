@@ -29,6 +29,8 @@ Run `npx trpc-v10-migrate-codemod --help` to see all options.
 
 `--react-namespace` - namespace of your tRPC React hooks (can be specified multiple times) (default = 'trpc')
 
+- setting this to an empty string (`--react-namespace=''`) will match hooks without a namespace like `useQuery()` and `useMutation()`
+
 `--caller-namespace` - namespace of your tRPC `createCaller`s (i.e. `const caller = appRouter.createCaller()`) (can be specified multiple times) (default = 'caller')
 
 `--context-namespace` - namespace of your tRPC context helpers (i.e. `const utils = trpc.useContext()`) (can be specified multiple times) (default = 'utils')

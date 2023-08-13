@@ -46,18 +46,29 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 				if (!Node.isCallExpression(node)) return
 				const firstChild = node.getFirstChild()
 
-				if (Node.isIdentifier(firstChild) && resolvedConfig.routerFactory.includes(firstChild.getText())) {
-					const { units, topNode } = getRouterUnits({ node })
+				if (Node.isIdentifier(firstChild)) {
+					const firstChildText = firstChild.getText()
+					if (resolvedConfig.reactNamespace.includes('') && ['useQuery', 'useMutation'].includes(firstChildText)) {
+						const path = handleReactHookCall(firstChildText, node)
+						if (!path) return
 
-					writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
-					const routerNameIdentifier = topNode.getParent()?.getFirstChild()
-					if (Node.isIdentifier(routerNameIdentifier)) {
-						const identifier = routerNameIdentifier.getText()
-						sourceFileMigratedRouters.push(identifier)
-						allMigratedRouters.push({ filePath, identifier })
+						firstChild.replaceWithText(`trpc.${path}.${firstChildText}`)
+						return
 					}
-					serverHasChanged = true
-					return
+
+					if (resolvedConfig.routerFactory.includes(firstChildText)) {
+						const { units, topNode } = getRouterUnits({ node })
+
+						writeNewRouter({ project, units, sourceFile, topNode, config: resolvedConfig })
+						const routerNameIdentifier = topNode.getParent()?.getFirstChild()
+						if (Node.isIdentifier(routerNameIdentifier)) {
+							const identifier = routerNameIdentifier.getText()
+							sourceFileMigratedRouters.push(identifier)
+							allMigratedRouters.push({ filePath, identifier })
+						}
+						serverHasChanged = true
+						return
+					}
 				}
 
 				if (!Node.isPropertyAccessExpression(firstChild)) return
@@ -65,21 +76,28 @@ export const transformv10Migration = async (config: Partial<MigrateConfig>) => {
 
 				if (Node.isIdentifier(callNamespaceOrCallExpression)) {
 					const namespace = callNamespaceOrCallExpression.getText()
-					if (resolvedConfig.reactNamespace.includes(namespace)) {
+
+					const reactNamespaceMatch = resolvedConfig.reactNamespace.find((reactNamespace) =>
+						reactNamespace === namespace
+					)
+					if (reactNamespaceMatch) {
 						const procedureCallType = firstChild.getChildAtIndex(2).getText()
 
 						const path = handleReactHookCall(procedureCallType, node)
 						if (!path) return
 
-						firstChild.replaceWithText(`${resolvedConfig.reactNamespace}.${path}.${procedureCallType}`)
+						firstChild.replaceWithText(`${reactNamespaceMatch}.${path}.${procedureCallType}`)
 						return
 					}
 
-					if (resolvedConfig.callerNamespace.includes(namespace)) {
+					const callerNamespaceMatch = resolvedConfig.callerNamespace.find((callerNamespace) =>
+						callerNamespace === namespace
+					)
+					if (callerNamespaceMatch) {
 						const path = handleCallerCall(node)
 						if (!path) return
 
-						firstChild.replaceWithText(`${resolvedConfig.callerNamespace}.${path}`)
+						firstChild.replaceWithText(`${callerNamespaceMatch}.${path}`)
 						return
 					}
 

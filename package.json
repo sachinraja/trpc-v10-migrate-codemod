@@ -33,7 +33,6 @@
 		"lint:format": "dprint check",
 		"lint:types": "tsc",
 		"lint:js": "eslint .",
-		"prepare": "husky install",
 		"prepublishOnly": "pnpm build",
 		"test": "vitest",
 		"migrate-v10": "tsx src/bin.ts"
@@ -41,30 +40,25 @@
 	"dependencies": {
 		"clipanion": "3.2.1",
 		"lodash-es": "^4.17.21",
-		"ts-morph": "16.0.0",
-		"typanion": "^3.12.0"
+		"ts-morph": "19.0.0",
+		"typanion": "^3.14.0"
 	},
 	"devDependencies": {
-		"@sachinraja/eslint-config": "0.1.1",
+		"@sachinraja/eslint-config": "0.3.0",
 		"@trpc/server": "9.27.2",
-		"@types/lodash-es": "^4.17.6",
-		"@types/node": "18.7.14",
-		"dprint": "0.31.1",
-		"eslint": "8.23.0",
-		"husky": "8.0.1",
-		"nano-staged": "0.8.0",
+		"@types/lodash-es": "^4.17.8",
+		"@types/node": "20.4.10",
+		"dprint": "0.40.2",
+		"eslint": "8.47.0",
 		"npm-run-all": "4.1.5",
-		"tsup": "6.2.3",
-		"tsx": "3.9.0",
-		"typescript": "4.8.2",
-		"vite": "3.0.9",
-		"vitest": "0.23.0",
-		"zod": "3.18.0"
+		"tsup": "7.2.0",
+		"tsx": "3.12.7",
+		"typescript": "5.1.6",
+		"vite": "4.4.9",
+		"vitest": "0.34.1",
+		"zod": "3.21.4"
 	},
 	"sideEffects": false,
-	"nano-staged": {
-		"*.{js,ts,md,json,yaml}": "dprint fmt"
-	},
 	"tsup": {
 		"entry": [
 			"src/index.ts",
@@ -80,5 +74,5 @@
 		"splitting": true,
 		"clean": true
 	},
-	"packageManager": "pnpm@7.33.6"
+	"packageManager": "pnpm@8.6.12"
 }
